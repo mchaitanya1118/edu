@@ -5,6 +5,9 @@ RUN apk add --no-cache libc6-compat python3 make g++ openssl
 
 WORKDIR /app
 
+# Ensure devDependencies are installed even if NODE_ENV=production is passed by Coolify
+ENV NODE_ENV=development
+
 # Enable pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
@@ -12,18 +15,20 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/api/package.json ./packages/api/
 
-# Install dependencies
-RUN pnpm install --filter aus-edu-api... --frozen-lockfile
+# Install all dependencies for building
+RUN pnpm install --prod=false --filter aus-edu-api... --frozen-lockfile
 
 # Copy Prisma schema and generate client
 COPY packages/api/prisma ./packages/api/prisma
 RUN cd packages/api && npx prisma generate --schema=./prisma/schema.prisma
 
-# Copy source and build
+# Copy source and build NestJS distribution
 COPY packages/api ./packages/api
 RUN cd packages/api && pnpm run build
 
+# ------------------------------------------------------------------------------
 # Production runtime stage
+# ------------------------------------------------------------------------------
 FROM node:20-alpine AS runner
 
 RUN apk add --no-cache libc6-compat openssl
@@ -38,15 +43,12 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/api/package.json ./packages/api/
 
-# Install production dependencies
+# Install production dependencies (including prisma CLI for migrations)
 RUN pnpm install --prod --filter aus-edu-api... --frozen-lockfile
 
-# Copy Prisma schema and generated client
-COPY --from=builder /app/packages/api/prisma ./packages/api/prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/packages/api/node_modules/.prisma ./packages/api/node_modules/.prisma
-COPY --from=builder /app/packages/api/node_modules/@prisma ./packages/api/node_modules/@prisma
+# Copy Prisma schema and generate client directly in runner
+COPY packages/api/prisma ./packages/api/prisma
+RUN cd packages/api && npx prisma generate --schema=./prisma/schema.prisma
 
 # Copy built application & entrypoint
 COPY --from=builder /app/packages/api/dist ./packages/api/dist
@@ -58,4 +60,3 @@ WORKDIR /app/packages/api
 EXPOSE 4000
 
 ENTRYPOINT ["./entrypoint.sh"]
-
