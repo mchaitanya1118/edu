@@ -382,18 +382,18 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
         {/* Main Content Area */}
         <div className="flex-1 lg:ml-72 flex flex-col min-w-0">
           {/* Feature-Rich Top Command Navbar */}
-          <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 sticky top-0 z-30">
+          <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-3 sticky top-0 z-30">
             {/* Left: Mobile Trigger + Contextual Breadcrumb + Active Intake Selector */}
-            <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 shrink-0"
+                className="lg:hidden p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 shrink-0 cursor-pointer"
                 aria-label="Open menu"
               >
                 <Menu className="w-4 h-4" />
               </button>
 
-              <div className="flex items-center gap-2 min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                 <span
                   className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border shrink-0 ${roleMeta.badgeBg}`}
                 >
@@ -401,7 +401,7 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
                   {roleMeta.label}
                 </span>
                 <ChevronRight className="hidden sm:block w-4 h-4 text-slate-300 shrink-0" />
-                <span className="font-bold text-sm sm:text-base text-slate-900 truncate">
+                <span className="font-bold text-xs sm:text-sm md:text-base text-slate-900 truncate">
                   {activeNavItem?.label || 'Executive Workspace'}
                 </span>
               </div>
@@ -426,10 +426,10 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
             </div>
 
             {/* Right: Command Search + Currency FX + Role Switcher + AI Copilot + Quick Create + Notifications + Profile */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               {/* Interactive Quick-Jump Search Bar */}
-              <div className="relative w-40 sm:w-56">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <div className="relative w-28 xs:w-36 sm:w-48 md:w-56">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
                   value={searchQuery}
@@ -439,8 +439,8 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
                     setSearchQuery(e.target.value);
                     setSearchOpen(true);
                   }}
-                  placeholder="Jump to page or CRICOS..."
-                  className="w-full h-9 bg-slate-100/80 border border-slate-200/90 rounded-xl pl-8 pr-10 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-3 focus:ring-blue-500/10 transition-all"
+                  placeholder="Search..."
+                  className="w-full h-8.5 sm:h-9 bg-slate-100/80 border border-slate-200/90 rounded-xl pl-7 sm:pl-8 pr-2 sm:pr-10 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/10 transition-all"
                 />
                 <span className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-semibold text-slate-400 bg-white border border-slate-200 rounded-md px-1.5 py-0.5 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
                   <Command className="w-2.5 h-2.5" />K
@@ -592,11 +592,11 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
                     setCurrencyOpen(false);
                     setNotifOpen(false);
                   }}
-                  className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer whitespace-nowrap"
+                  className="inline-flex items-center justify-center gap-1.5 h-8.5 sm:h-9 px-2.5 sm:px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer whitespace-nowrap"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Quick Action</span>
-                  <ChevronDown className="w-3 h-3 opacity-80" />
+                  <ChevronDown className="w-3 h-3 opacity-80 hidden sm:inline" />
                 </button>
 
                 {quickCreateOpen && (
@@ -792,7 +792,7 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
           </header>
 
           {/* Page Workspace */}
-          <main className="flex-1 p-4 sm:p-8 max-w-[1440px] w-full mx-auto">
+          <main className="flex-1 p-3.5 sm:p-6 lg:p-8 max-w-[1440px] w-full mx-auto min-w-0">
             {children ?? <Outlet />}
           </main>
         </div>

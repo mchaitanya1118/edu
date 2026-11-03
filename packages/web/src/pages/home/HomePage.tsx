@@ -310,17 +310,17 @@ export default function HomePage() {
             <NavLink
               to="/login"
               style={{ textDecoration: 'none' }}
-              className="inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all whitespace-nowrap"
+              className="hidden sm:inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all whitespace-nowrap"
             >
               Sign In
             </NavLink>
             <NavLink
               to="/signup"
               style={{ textDecoration: 'none' }}
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-xs shadow-blue-600/20 whitespace-nowrap"
+              className="inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-xs shadow-blue-600/20 whitespace-nowrap"
             >
               Get Started
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5 hidden xs:inline" />
             </NavLink>
 
             {/* Mobile Hamburger Button */}
@@ -330,7 +330,7 @@ export default function HomePage() {
               className="lg:hidden p-2 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors cursor-pointer"
               aria-label="Toggle navigation menu"
             >
-              <Layers className="w-4 h-4" />
+              {mobileNavOpen ? <ChevronDown className="w-4 h-4 rotate-180 transition-transform" /> : <Layers className="w-4 h-4" />}
             </button>
           </div>
         </div>
@@ -357,20 +357,36 @@ export default function HomePage() {
                 </a>
               ))}
             </div>
+            <div className="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2">
+              <NavLink
+                to="/login"
+                onClick={() => setMobileNavOpen(false)}
+                className="py-2.5 px-3 rounded-xl text-xs font-bold text-center bg-slate-100 text-slate-800 hover:bg-slate-200"
+              >
+                Sign In
+              </NavLink>
+              <NavLink
+                to="/signup"
+                onClick={() => setMobileNavOpen(false)}
+                className="py-2.5 px-3 rounded-xl text-xs font-bold text-center bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Create Account
+              </NavLink>
+            </div>
             <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => launchDemoPortal('agent', '/agent/dashboard')}
-                className="flex-1 py-2 px-3 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 cursor-pointer"
+                className="flex-1 py-2 px-3 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 cursor-pointer text-center"
               >
-                Launch Agent Demo
+                Agent Demo
               </button>
               <button
                 type="button"
                 onClick={() => launchDemoPortal('school_admin', '/school-admin/dashboard')}
-                className="flex-1 py-2 px-3 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-pointer"
+                className="flex-1 py-2 px-3 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-pointer text-center"
               >
-                Launch School Demo
+                School Demo
               </button>
             </div>
           </div>
@@ -380,7 +396,7 @@ export default function HomePage() {
       {/* Hero Section with Interactive Quote & Scholarship Simulator (Viewport-Optimized) */}
       <section
         id="simulator"
-        className="relative overflow-hidden bg-gradient-to-b from-white via-blue-50/20 to-slate-50 min-h-[calc(100vh-4rem)] flex items-center py-6 sm:py-8 lg:py-3 border-b border-slate-200/80"
+        className="relative overflow-hidden bg-gradient-to-b from-white via-blue-50/20 to-slate-50 min-h-0 lg:min-h-[calc(100vh-4rem)] flex items-center py-6 sm:py-10 lg:py-4 border-b border-slate-200/80"
       >
         {/* Subtle Ambient Background Grid */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -407,47 +423,47 @@ export default function HomePage() {
               </div>
 
               {/* Dynamic Audience Selector */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-1 p-1 rounded-xl bg-slate-200/70 border border-slate-200 w-fit mx-auto lg:mx-0">
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-1 p-1 rounded-xl bg-slate-200/70 border border-slate-200 w-full xs:w-fit mx-auto lg:mx-0">
                 <button
                   type="button"
                   onClick={() => setAudience('agent')}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  className={`flex-1 xs:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     audience === 'agent'
                       ? 'bg-white text-blue-700 shadow-2xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <Building2 className="w-3.5 h-3.5" />
-                  For Education Agencies
+                  <Building2 className="w-3.5 h-3.5 shrink-0" />
+                  <span>For Agencies</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setAudience('school')}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  className={`flex-1 xs:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     audience === 'school'
                       ? 'bg-white text-emerald-700 shadow-2xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <School className="w-3.5 h-3.5" />
-                  For CRICOS Schools &amp; RTOs
+                  <School className="w-3.5 h-3.5 shrink-0" />
+                  <span>For CRICOS Colleges</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setAudience('admin')}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  className={`w-full xs:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     audience === 'admin'
                       ? 'bg-white text-indigo-700 shadow-2xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  Multi-Tenant Governance
+                  <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                  <span>Multi-Tenant Governance</span>
                 </button>
               </div>
 
               {/* Headline */}
-              <h1 className="text-2xl sm:text-4xl lg:text-[36px] xl:text-[42px] font-extrabold tracking-tight text-slate-900 leading-[1.12]">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[34px] xl:text-[40px] font-extrabold tracking-tight text-slate-900 leading-[1.15] break-words">
                 {audience === 'agent' && (
                   <>
                     Quote Australian CRICOS Courses &amp;{' '}
@@ -521,7 +537,7 @@ export default function HomePage() {
 
               {/* Primary CTAs + 1-Click Live Workspace Jumpers */}
               <div className="pt-1 space-y-2.5">
-                <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-2.5">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-2.5 w-full sm:w-auto">
                   <NavLink to="/signup" style={{ textDecoration: 'none' }} className="w-full sm:w-auto">
                     <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-bold text-white rounded-xl bg-blue-600 hover:bg-blue-700 transition-all shadow-md shadow-blue-600/20 cursor-pointer">
                       Create Partner Account
@@ -547,19 +563,21 @@ export default function HomePage() {
                     }
                     className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-bold text-slate-800 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
                   >
-                    <Zap className="w-4 h-4 text-amber-500" />
-                    Launch Live{' '}
-                    {audience === 'school'
-                      ? 'School Admin'
-                      : audience === 'admin'
-                      ? 'Platform Admin'
-                      : 'Agent'}{' '}
-                    Workspace
+                    <Zap className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>
+                      Launch Live{' '}
+                      {audience === 'school'
+                        ? 'School Admin'
+                        : audience === 'admin'
+                        ? 'Platform Admin'
+                        : 'Agent'}{' '}
+                      Workspace
+                    </span>
                   </button>
                 </div>
 
                 {/* Direct 3-Portal Quick Bar */}
-                <div className="inline-flex flex-wrap items-center justify-center lg:justify-start gap-1.5 text-[11px] text-slate-500">
+                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-1.5 text-[11px] text-slate-500">
                   <span className="font-semibold text-slate-400">1-Click Live Demos:</span>
                   <button
                     type="button"
@@ -586,31 +604,31 @@ export default function HomePage() {
               </div>
 
               {/* Executive Metrics Strip */}
-              <div className="pt-3 border-t border-slate-200/80 grid grid-cols-3 gap-3 max-w-md mx-auto lg:mx-0">
+              <div className="pt-3 border-t border-slate-200/80 grid grid-cols-3 gap-2 sm:gap-3 max-w-md mx-auto lg:mx-0 text-center sm:text-left">
                 <div>
-                  <p className="text-xl sm:text-2xl font-extrabold text-slate-900">52+</p>
-                  <p className="text-[11px] font-medium text-slate-500">CRICOS Colleges</p>
+                  <p className="text-lg sm:text-2xl font-extrabold text-slate-900">52+</p>
+                  <p className="text-[10px] sm:text-[11px] font-medium text-slate-500 leading-tight">CRICOS Colleges</p>
                 </div>
                 <div>
-                  <p className="text-xl sm:text-2xl font-extrabold text-slate-900">1,240+</p>
-                  <p className="text-[11px] font-medium text-slate-500">Accredited Courses</p>
+                  <p className="text-lg sm:text-2xl font-extrabold text-slate-900">1,240+</p>
+                  <p className="text-[10px] sm:text-[11px] font-medium text-slate-500 leading-tight">Accredited Courses</p>
                 </div>
                 <div>
-                  <p className="text-xl sm:text-2xl font-extrabold text-emerald-600">$142M+</p>
-                  <p className="text-[11px] font-medium text-slate-500">Tuition Quoted</p>
+                  <p className="text-lg sm:text-2xl font-extrabold text-emerald-600">$142M+</p>
+                  <p className="text-[10px] sm:text-[11px] font-medium text-slate-500 leading-tight">Tuition Quoted</p>
                 </div>
               </div>
             </div>
 
             {/* Right 5 Columns: Live Interactive Australian Tuition & Scholarship Calculator */}
-            <div className="lg:col-span-5 xl:col-span-5 relative">
+            <div className="lg:col-span-5 xl:col-span-5 relative w-full max-w-xl mx-auto lg:max-w-none">
               {/* Ambient Glow Backdrop */}
               <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-emerald-500/10 rounded-3xl blur-xl opacity-60 pointer-events-none" />
 
               <div className="relative bg-white rounded-2xl border border-slate-200/90 shadow-xl shadow-slate-900/5 overflow-hidden">
                 {/* Calculator Header Bar — Daylight First Aesthetic */}
-                <div className="bg-gradient-to-b from-slate-50 to-white px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-200/80">
-                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                <div className="bg-gradient-to-b from-slate-50 to-white px-3.5 py-3 sm:px-5 sm:py-3.5 border-b border-slate-200/80">
+                  <div className="flex flex-wrap items-center justify-between gap-1.5 mb-1.5">
                     <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-bold">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       Live PRISMS Quote Engine
@@ -688,16 +706,16 @@ export default function HomePage() {
                     </div>
 
                     {/* Compact Dynamic Metadata Bar */}
-                    <div className="mt-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50/80 border border-blue-200/70 flex items-center justify-between gap-2 text-xs">
+                    <div className="mt-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50/80 border border-blue-200/70 flex flex-col xs:flex-row xs:items-center justify-between gap-1 xs:gap-2 text-xs">
                       <div className="min-w-0 flex items-center gap-1.5 truncate">
                         <span className="font-bold text-slate-900 truncate">
                           {activeCourse.provider}
                         </span>
-                        <span className="text-[11px] font-mono text-blue-700 shrink-0 font-semibold">
+                        <span className="text-[10px] sm:text-[11px] font-mono text-blue-700 shrink-0 font-semibold">
                           CRICOS {activeCourse.cricos}
                         </span>
                       </div>
-                      <div className="shrink-0 flex items-center gap-1.5">
+                      <div className="shrink-0 flex items-center gap-1.5 self-end xs:self-auto">
                         <span className="text-emerald-700 font-bold text-xs">
                           ${activeCourse.promoWeeklyRate}/wk
                         </span>
@@ -712,7 +730,7 @@ export default function HomePage() {
                   </div>
 
                   {/* 2. Campus City & 3. Study Duration */}
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
                     <div>
                       <label
                         htmlFor="campus-city-select"
@@ -748,7 +766,7 @@ export default function HomePage() {
                             key={w}
                             type="button"
                             onClick={() => setWeeks(w)}
-                            className={`rounded text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
+                            className={`rounded text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
                               weeks === w
                                 ? 'bg-white text-blue-700 shadow-2xs'
                                 : 'text-slate-600 hover:text-slate-900'
@@ -762,7 +780,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Payment Schedule & OSHC Controls */}
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
                     {/* Payment Plan Toggle */}
                     <div>
                       <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
@@ -772,7 +790,7 @@ export default function HomePage() {
                         <button
                           type="button"
                           onClick={() => setSimPaymentPlan('instalment')}
-                          className={`rounded text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
+                          className={`rounded text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
                             simPaymentPlan === 'instalment'
                               ? 'bg-white text-blue-700 shadow-2xs'
                               : 'text-slate-600 hover:text-slate-900'
@@ -783,7 +801,7 @@ export default function HomePage() {
                         <button
                           type="button"
                           onClick={() => setSimPaymentPlan('upfront')}
-                          className={`rounded text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
+                          className={`rounded text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center justify-center whitespace-nowrap px-1 ${
                             simPaymentPlan === 'upfront'
                               ? 'bg-white text-emerald-700 shadow-2xs'
                               : 'text-slate-600 hover:text-slate-900'
@@ -808,7 +826,7 @@ export default function HomePage() {
                             : 'bg-slate-50/70 border-slate-200 text-slate-600'
                         }`}
                       >
-                        <span className="text-xs font-bold">
+                        <span className="text-[11px] sm:text-xs font-bold">
                           {includeOshc ? `OSHC (+$${weeks * 14})` : 'No OSHC'}
                         </span>
                         <div
@@ -870,7 +888,7 @@ export default function HomePage() {
                     </div>
 
                     {/* CoE Initial Deposit Callout */}
-                    <div className="pt-1.5 border-t border-blue-100 flex items-center justify-between bg-blue-50/90 -mx-1 px-3 py-1.5 rounded-lg border border-blue-200/80">
+                    <div className="pt-1.5 border-t border-blue-100 flex flex-wrap items-center justify-between gap-1 bg-blue-50/90 -mx-1 px-3 py-1.5 rounded-lg border border-blue-200/80">
                       <span className="text-[11px] font-bold text-blue-900 flex items-center gap-1.5">
                         <ShieldCheck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                         Initial CoE Deposit (Subclass 500):
@@ -924,30 +942,30 @@ export default function HomePage() {
             </div>
 
             {/* State Filter Pills & Counter */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
               <span className="text-xs font-semibold text-slate-500">
                 Showing <strong className="text-slate-900">{filteredProviders.length}</strong> of 52 verified colleges
               </span>
-              <div className="flex items-center gap-1 bg-white p-1.5 rounded-2xl border border-slate-200/90 shadow-2xs">
+              <div className="flex flex-wrap items-center gap-1 bg-white p-1 rounded-2xl border border-slate-200/90 shadow-2xs w-full sm:w-auto">
                 {['All', 'NSW', 'VIC', 'QLD', 'WA', 'SA'].map((st) => (
                   <button
                     key={st}
                     type="button"
                     onClick={() => setStateFilter(st)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    className={`flex-1 sm:flex-initial px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${
                       stateFilter === st
                         ? 'bg-blue-600 text-white shadow-xs'
                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                     }`}
                   >
-                    {st === 'All' ? 'All States' : st}
+                    {st === 'All' ? 'All' : st}
                   </button>
                 ))}
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {filteredProviders.map((prov) => (
               <div
                 key={prov.cricos}
@@ -1059,18 +1077,18 @@ export default function HomePage() {
                 </div>
 
                 {/* Card Action Footer */}
-                <div className="pt-5 mt-6 border-t border-slate-100 flex items-center gap-2.5">
+                <div className="pt-4 mt-5 border-t border-slate-100 flex flex-col xs:flex-row items-center gap-2">
                   <button
                     type="button"
                     onClick={() => launchDemoPortal('agent', '/portal')}
-                    className="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors text-center cursor-pointer"
+                    className="w-full xs:flex-1 py-2.5 px-3 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors text-center cursor-pointer"
                   >
                     View TAS &amp; Scope
                   </button>
                   <button
                     type="button"
                     onClick={() => launchDemoPortal('agent', '/quotes')}
-                    className="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all flex items-center justify-center gap-1 shadow-xs shadow-blue-600/20 cursor-pointer"
+                    className="w-full xs:flex-1 py-2.5 px-3 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all flex items-center justify-center gap-1 shadow-xs shadow-blue-600/20 cursor-pointer"
                   >
                     Instant Quote <ArrowRight className="w-3.5 h-3.5" />
                   </button>
@@ -1080,9 +1098,9 @@ export default function HomePage() {
           </div>
 
           {/* Section Bottom Marketplace Callout Banner */}
-          <div className="mt-12 rounded-3xl bg-white border border-slate-200/90 p-6 sm:p-8 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4 text-center md:text-left">
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200/60 flex items-center justify-center shrink-0 text-blue-600">
+          <div className="mt-12 rounded-3xl bg-white border border-slate-200/90 p-6 sm:p-8 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+            <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200/60 flex items-center justify-center shrink-0 text-blue-600 mx-auto sm:mx-0">
                 <School className="w-6 h-6" />
               </div>
               <div>
@@ -1094,14 +1112,14 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 shrink-0">
-              <NavLink to="/signup" style={{ textDecoration: 'none' }}>
-                <span className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-xs cursor-pointer">
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto shrink-0">
+              <NavLink to="/signup" style={{ textDecoration: 'none' }} className="w-full sm:w-auto">
+                <span className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-xs cursor-pointer">
                   List Your Institution <ArrowRight className="w-3.5 h-3.5" />
                 </span>
               </NavLink>
-              <NavLink to="/portal" style={{ textDecoration: 'none' }}>
-                <span className="inline-flex items-center gap-1 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">
+              <NavLink to="/portal" style={{ textDecoration: 'none' }} className="w-full sm:w-auto">
+                <span className="w-full sm:w-auto inline-flex items-center justify-center gap-1 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">
                   Browse All 52 Colleges
                 </span>
               </NavLink>
@@ -1129,7 +1147,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-5 sm:gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 max-w-6xl mx-auto">
             {[
               {
                 name: 'ELICOS',
@@ -1454,7 +1472,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {[
               {
                 name: 'Sarah Chen',
@@ -1638,9 +1656,9 @@ export default function HomePage() {
             Join 9,000+ global counselors and 52+ CRICOS institutions quoting, verifying GTE documents, and issuing PRISMS CoEs on AusEdu Connect.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-3.5 pt-2">
-            <NavLink to="/signup" style={{ textDecoration: 'none' }}>
-              <span className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm px-7 py-4 rounded-xl shadow-lg shadow-blue-600/30 hover:scale-105 transition-all cursor-pointer">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2 w-full max-w-md sm:max-w-none mx-auto">
+            <NavLink to="/signup" style={{ textDecoration: 'none' }} className="w-full sm:w-auto">
+              <span className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm px-7 py-3.5 rounded-xl shadow-lg shadow-blue-600/30 transition-all cursor-pointer">
                 Create Free Partner Account
                 <ArrowRight className="w-4 h-4" />
               </span>
@@ -1648,30 +1666,30 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => launchDemoPortal('school_admin', '/school-admin/dashboard')}
-              className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm px-6 py-4 rounded-xl shadow-lg shadow-emerald-600/20 hover:scale-105 transition-all cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm px-6 py-3.5 rounded-xl shadow-lg shadow-emerald-600/20 transition-all cursor-pointer"
             >
               Launch School Admin Demo
             </button>
             <button
               type="button"
               onClick={() => launchDemoPortal('agent', '/agent/dashboard')}
-              className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-sm px-6 py-4 rounded-xl backdrop-blur-xs transition-all cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-sm px-6 py-3.5 rounded-xl backdrop-blur-xs transition-all cursor-pointer"
             >
               Launch Agency Hub Demo
             </button>
           </div>
 
-          <div className="pt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400 font-medium">
+          <div className="pt-6 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-slate-400 font-medium">
             <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
               ESOS National Code 2018 Compliant
             </span>
             <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
               Zero Credit Card Required
             </span>
             <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
               Instant 1-Click Interactive Demos
             </span>
           </div>
@@ -1681,7 +1699,7 @@ export default function HomePage() {
       {/* Modern Daylight Footer */}
       <footer className="border-t border-slate-200 bg-white py-14 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-8 mb-12">
             <div>
               <h4 className="font-bold text-slate-900 mb-3.5 text-xs sm:text-sm uppercase tracking-wider">
                 Live Workspaces
