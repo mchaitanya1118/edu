@@ -23,3 +23,4 @@ pnpm run build
 
 ### Docker & Coolify Deployment
 See [COOLIFY_HOSTINGER_DEPLOYMENT.md](./COOLIFY_HOSTINGER_DEPLOYMENT.md) for complete instructions.
+
