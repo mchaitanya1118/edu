@@ -79,8 +79,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    ports:
-      - "4000:4000"
+    expose:
+      - "4000"
     networks:
       - aus-edu-network
 
@@ -100,8 +100,8 @@ services:
       VITE_API_URL: /api
     depends_on:
       - api
-    ports:
-      - "80:80"
+    expose:
+      - "80"
     networks:
       - aus-edu-network
 
