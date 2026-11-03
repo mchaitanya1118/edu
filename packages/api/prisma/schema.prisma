@@ -1,0 +1,982 @@
+// ============================================================
+// AusEdu Connect - Prisma Schema
+// Multi-tenant B2B education marketplace.
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------------------------------//
+// Enums
+// -------------------------------------------//
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+  DRAFT
+}
+
+enum TenantPlan {
+  DEVELOPER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  PLATFORM_ADMIN
+  SCHOOL_ADMIN
+  SCHOOL_STAFF
+  AGENCY_OWNER
+  AGENCY_COUNSELOR
+  FINANCE_USER
+}
+
+enum SchoolVerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+enum AgencyVerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  REVIEW
+}
+
+enum CourseCategory {
+  ELICOS
+  VET_CERTIFICATE
+  VET_DIPLOMA
+  HIGH_SCHOOL
+}
+
+enum CourseQualification {
+  CERTIFICATE_I
+  CERTIFICATE_II
+  CERTIFICATE_III
+  CERTIFICATE_IV
+  DIPLOMA
+  ADVANCED_DIPLOMA
+  DEGREE
+  MASTERS
+  DOCTORATE
+  HIGH_SCHOOL
+  EnglishLanguage
+}
+
+enum CourseDeliveryMode {
+  ONLINE
+  BLENDED
+  ON_CAMPUS
+  WORKPLACE
+}
+
+enum FeePeriod {
+  PER_YEAR
+  PER_HALF_YEAR
+  PER_SEMESTER
+  PER_TERM
+  PER_COURSE
+  ONE_TIME
+  PER_UNIT
+}
+
+enum FeeType {
+  TUITION
+  ENROLLMENT
+  MATERIAL
+  OTHER_MANDATORY
+  OPTIONAL
+}
+
+enum PromotionStatus {
+  DRAFT
+  PENDING_VERIFICATION
+  SCHEDULED
+  ACTIVE
+  PAUSED
+  EXPIRED
+  REJECTED
+}
+
+enum PromotionDiscountType {
+  PERCENTAGE
+  AMOUNT
+  MATERIAL_FEE_WAIVER
+}
+
+enum PromotionVerificationStatus {
+  NOT_REQUIRED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum DiscountStackPolicy {
+  BEST_ELIGIBLE
+  EXPLICIT
+  NONE
+}
+
+enum CommissionStatus {
+  DRAFT
+  PENDING_APPROVAL
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
+enum CommissionType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum StudentConsentPurpose {
+  LEADS
+  MARKETING
+  COURSE_APPLICATION
+  FOLLOW_UP
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  QUOTE_PREPARED
+  APPLICATION_IN_PROGRESS
+  SUBMITTED_TO_SCHOOL
+  OFFER_RECEIVED
+  ACCEPTED
+  ENROLLED
+  CLOSED
+  WITHDRAWN
+}
+
+enum ApplicationStatus {
+  NEW
+  IN_PROGRESS
+  SUBMITTED
+  UNDER_REVIEW
+  OFFERED
+  ACCEPTED
+  ENROLLED
+  WITHDRAWN
+  CLOSED
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum DocumentType {
+  SCHOOL_REGISTRATION
+  COURSE_DOCUMENTATION
+  PROMOTION_VERIFICATION
+  AGENCY_AGREEMENT
+  STUDENT_DOCUMENT
+  OTHER
+}
+
+enum DocumentStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  PASSWORD_CHANGE
+  ROLE_CHANGE
+  TENANT_SUSPEND
+  TENANT_REACTIVATE
+  PUBLISH_PROMOTION
+  VERIFY_PROMOTION
+  UPLOAD_DOCUMENT
+  VERIFY_DOCUMENT
+  CREATE_QUOTE
+  UPDATE_QUOTE
+  GENERATE_PDF
+  APPROVE_COMMISSION
+  TOGGLE_PROMOTION
+}
+
+// -------------------------------------------//
+// Core tenancy
+// -------------------------------------------//
+model Tenant {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  name          String
+  plan          TenantPlan @default(DEVELOPER)
+  status        TenantStatus @default(ACTIVE)
+  branding      Json?
+  settings      Json?
+  subscription  TenantSubscription? @relation("tenantSubscription")
+  platformSettings  PlatformSetting[] @relation("tenantSettings")
+  members       TenantMembership[] @relation("tenantMemberships")
+  courses       Course[] @relation("tenantCourses")
+  schools       SchoolProfile[] @relation("tenantSchools")
+  agencies      AgencyProfile[] @relation("tenantAgencies")
+  promotions    Promotion[] @relation("tenantPromotions")
+  commission    AgencyCommissionAgreement[] @relation("tenantCommissionAgreements")
+  leads         Lead[] @relation("tenantLeads")
+  applications  Application[] @relation("tenantApplications")
+  quotes        Quote[] @relation("tenantQuotes")
+  documents     Document[] @relation("tenantDocuments")
+  auditLogs     AuditLog[] @relation("tenantAuditLogs")
+  notifications Notification[] @relation("tenantNotifications")
+  savedCourses  AgencySavedCourse[] @relation("tenantSavedCourses")
+  contracts     SchoolAgencyRelationship[] @relation("schoolContract")
+  users         User[] @relation("tenantUsers")
+  students      Student[] @relation("tenantStudents")
+  subscription_id String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model TenantMembership {
+  id            String   @id @default(cuid())
+  tenant        Tenant   @relation("tenantMemberships", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId      String
+  userId        String
+  user          User     @relation("tenantMemberships", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  role          UserRole
+  permission    String   @default("") // e.g. "school:manage", "quote:generate"
+  status        String   @default("ACTIVE") // ACTIVE | INVITED | DECLINED
+  invitedBy     String?
+  invitedAt     DateTime?
+  acceptedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([tenantId, userId])
+  @@index([tenantId, status])
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String?
+  fullName      String
+  phone         String?
+  avatarUrl     String?
+  tenant        Tenant?   @relation("tenantUsers", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId      String?
+  memberships   TenantMembership[] @relation("tenantMemberships")
+  auditLogs     AuditLog[] @relation("userAuditLogs")
+  notifications Notification[] @relation("userNotifications")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model TenantSubscription {
+  id            String   @id @default(cuid())
+  tenant        Tenant   @relation("tenantSubscription", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId      String   @unique @map("tenant_subscription_tenant_id")
+  status        TenantStatus @default(ACTIVE)
+  billingCycle  String   @default("MONTHLY")
+  amount        Decimal  @default(0)
+  currency      String   @default("AUD")
+  seats         Int      @default(1)
+  startsAt      DateTime @default(now())
+  endsAt        DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+}
+
+model PlatformSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String?
+  updatedAt DateTime @updatedAt
+  tenant    Tenant   @relation("tenantSettings", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId  String   @unique
+
+  @@index([tenantId])
+}
+
+// -------------------------------------------//
+// Schools & agencies (multi-tenant)
+// -------------------------------------------//
+model SchoolProfile {
+  id                        String        @id @default(cuid())
+  tenant                    Tenant        @relation("tenantSchools", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId                  String
+  schoolId                  String?       @unique
+  legalName                 String
+  tradingName               String?
+  registrationNumber        String?
+  cricosCode                String?
+  taxFileNumber             String?
+  verificationStatus        SchoolVerificationStatus @default(PENDING)
+  verificationNotes         String?
+  verifiedBy                String?
+  verifiedAt                DateTime?
+  deactivationReason        String?
+  addresses                 Campus[] @relation("schoolCampuses")
+  courses                   Course[] @relation("schoolCourses")
+  registrations             ProviderRegistration[] @relation("schoolRegistrations")
+  commissionAgreements      AgencyCommissionAgreement[] @relation("schoolCommissionAgreements")
+  commissionContracts       AgencyCommissionRelationship[] @relation("commissionSchool")
+  quoted                    Quote[] @relation("schoolQuotes")
+  documents                 Document[] @relation("schoolDocuments")
+  savedCourses              AgencySavedCourse[] @relation("savedCourseSchool")
+  contracts                 SchoolAgencyRelationship[] @relation("schoolContract")
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+}
+
+model AgencyProfile {
+  id                          String                   @id @default(cuid())
+  tenant                      Tenant                   @relation("tenantAgencies", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId                    String
+  agencyId                    String?                  @unique
+  legalName                   String
+  tradingName                 String?
+  regulatoryNumber            String?
+  acn                         String?
+  ABN                         String?
+  verificationStatus          AgencyVerificationStatus @default(PENDING)
+  verificationNotes           String?
+  verifiedBy                  String?
+  verifiedAt                  DateTime?
+  deactivationReason          String?
+  contacts                    AgencyContact[] @relation("agencyContacts")
+  commissionAgreements        AgencyCommissionAgreement[] @relation("agencyCommissionAgreements")
+  leads                       Lead[] @relation("agencyLeads")
+  savedCourses                AgencySavedCourse[] @relation("savedCourseAgency")
+  quotes                      Quote[] @relation("agencyQuotes")
+  contracts                   SchoolAgencyRelationship[] @relation("agencyContract")
+  agreements                  AgencyCommissionRelationship[] @relation("commissionAgency")
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+  @@index([tenantId])
+}
+
+model AgencyContact {
+  id          String   @id @default(cuid())
+  agency      AgencyProfile @relation("agencyContacts", fields: [agencyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  agencyId    String
+  fullName    String
+  email       String
+  phone       String?
+  role        String?
+  primary     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@unique([agencyId, email])
+  @@index([agencyId])
+}
+
+model ProviderRegistration {
+  id                 String         @id @default(cuid())
+  school             SchoolProfile @relation("schoolRegistrations", fields: [schoolId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  schoolId           String
+  registrationType   String
+  licenseNumber      String
+  registrationNumber String?
+  expiresAt          DateTime?
+  status             String         @default("ACTIVE")
+  issuedAt           DateTime @default(now())
+  createdAt          DateTime @default(now())
+
+  @@index([schoolId])
+}
+
+// -------------------------------------------//
+// Campuses
+// -------------------------------------------//
+model Campus {
+  id          String         @id @default(cuid())
+  school      SchoolProfile @relation("schoolCampuses", fields: [schoolId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  schoolId    String
+  name        String
+  addressLine1 String
+  addressLine2 String?
+  city        String
+  state       String // e.g. NSW
+  postcode    String
+  country     String @default("Australia")
+  timezone    String @default("Australia/Sydney")
+  courses     CourseCampus[] @relation("campusCourses")
+  promotionCampuses PromotionCampus[] @relation("campusPromotions")
+  courseFees CourseFee[] @relation("campusFees")
+  quotes      Quote[] @relation("campusQuotes")
+  documents   Document[] @relation("campusDocuments")
+  commissionRules CommissionRule[] @relation("campusRules")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([schoolId, name])
+  @@index([schoolId])
+}
+
+// -------------------------------------------//
+// Courses
+// -------------------------------------------//
+model Course {
+  id                String          @id @default(cuid())
+  school            SchoolProfile @relation("schoolCourses", fields: [schoolId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  schoolId          String
+  tenant            Tenant          @relation("tenantCourses", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId          String
+  code              String
+  name              String
+  category          CourseCategory
+  qualification     CourseQualification
+  deliveryMode      CourseDeliveryMode
+  durationMonths    Int?
+  description       String?
+  entryRequirements String?
+  internationalStudents Boolean @default(true)
+  cricosCourseCode  String?
+  status            CourseStatus @default(DRAFT)
+  publishedAt       DateTime?
+  archivedAt        DateTime?
+  campuses          CourseCampus[] @relation("courseCampuses")
+  intakes           CourseIntake[] @relation("courseIntakes")
+  fees              CourseFee[] @relation("courseFees")
+  pricingHistory    PricingHistory[] @relation("coursePricingHistory")
+  promotions        PromotionCourse[] @relation("promotionCourses")
+  savedCourses      AgencySavedCourse[] @relation("courseSavedCourses")
+  applications      Application[] @relation("courseApplications")
+  commissionRules   CommissionRule[] @relation("courseRules")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([schoolId, code])
+  @@index([schoolId])
+  @@index([status])
+  @@index([category, qualification])
+  @@index([internationalStudents])
+}
+
+model CourseCampus {
+  id         String   @id @default(cuid())
+  course     Course @relation("courseCampuses", fields: [courseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  courseId   String
+  campus     Campus @relation("campusCourses", fields: [campusId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  campusId   String
+  effectiveDate DateTime?
+  expiresDate DateTime?
+
+  @@unique([courseId, campusId])
+  @@index([courseId])
+}
+
+model CourseIntake {
+  id          String   @id @default(cuid())
+  course      Course @relation("courseIntakes", fields: [courseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  courseId    String
+  month       Int
+  year        Int
+  intakeLabel String   @unique // e.g. "2026-09"
+  description String?
+  availableSeats Int? @default(1)
+  status      String   @default("OPEN") // OPEN | LIMITED | CLOSED
+  applications Application[] @relation("intakeApplications")
+  quotes      Quote[] @relation("intakeQuotes")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([courseId, status])
+  @@index([year, month])
+}
+
+model CourseFee {
+  id           String        @id @default(cuid())
+  course       Course @relation("courseFees", fields: [courseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  courseId     String
+  campus       Campus? @relation("campusFees", fields: [campusId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  campusId     String?
+  feeType      FeeType
+  amount       Decimal
+  currency     String @default("AUD")
+  period       FeePeriod
+  description  String?
+  effectiveDate DateTime?
+  expiredDate  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([courseId, campusId, feeType, period])
+  @@index([courseId])
+  @@index([feeType])
+  @@index([effectiveDate])
+  @@index([expiredDate])
+}
+
+model PricingHistory {
+  id            String        @id @default(cuid())
+  course        Course @relation("coursePricingHistory", fields: [courseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  courseId      String
+  version       Int           @default(1)
+  changedById   String
+  changedByName String
+  changedByType UserRole
+  summary       Json          // concise summary of the fee change
+  changes       Json          // full diff: previous -> new
+  effectiveDate DateTime
+  createdAt     DateTime @default(now())
+
+  @@unique([courseId, version])
+  @@index([courseId, version])
+}
+
+// -------------------------------------------//
+// Promotions
+// -------------------------------------------//
+model Promotion {
+  id                String                        @id @default(cuid())
+  tenant            Tenant @relation("tenantPromotions", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId          String
+  name              String
+  description       String?
+  discountType      PromotionDiscountType
+  discountValue     Decimal
+  maxDiscount       Decimal?
+  minEligibleFee    Decimal?
+  stackPolicy       DiscountStackPolicy @default(BEST_ELIGIBLE)
+  terms             String?
+  internalNotes     String?
+  document          PromotionDocument? @relation("promotionDocument")
+  documentId        String?
+  status            PromotionStatus @default(DRAFT)
+  verificationStatus PromotionVerificationStatus @default(NOT_REQUIRED)
+  verifiedById      String?
+  verifiedByName    String?
+  verifiedAt        DateTime?
+  rejectedById      String?
+  rejectedByName    String?
+  rejectedAt        DateTime?
+  scheduleEnabled   Boolean @default(false)
+  startTime         DateTime?
+  endTime           DateTime?
+  effectiveDate     DateTime?
+  expiredDate       DateTime?
+  planPrice         Decimal? // tenant-level minimum spend override
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  courseLinks       PromotionCourse[] @relation("promotionCourses")
+  campusLinks       PromotionCampus[] @relation("promotionCampuses")
+  @@index([status])
+  @@index([startTime, endTime])
+  @@index([effectiveDate, expiredDate])
+}
+
+model PromotionCourse {
+  id         String   @id @default(cuid())
+  promotion  Promotion @relation("promotionCourses", fields: [promotionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  promotionId String
+  course     Course @relation("promotionCourses", fields: [courseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  courseId   String
+  campuses   String[] // campus ids eligible
+
+  @@unique([promotionId, courseId])
+  @@index([promotionId])
+  @@index([courseId])
+}
+
+model PromotionCampus {
+  id         String   @id @default(cuid())
+  promotion  Promotion @relation("promotionCampuses", fields: [promotionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  promotionId String
+  campus     Campus @relation("campusPromotions", fields: [campusId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  campusId   String
+
+  @@unique([promotionId, campusId])
+  @@index([promotionId])
+}
+
+model PromotionDocument {
+  id              String          @id @default(cuid())
+  promotion       Promotion @relation("promotionDocument", fields: [promotionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  promotionId     String   @unique
+  document        Document @relation("promotionDocuments", fields: [documentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  documentId      String
+  reviewedBy      String?
+  reviewedByName  String?
+  reviewedAt      DateTime?
+  notes           String?
+  status          String          @default("PENDING")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([promotionId])
+}
+
+// -------------------------------------------//
+// Agency commission agreements
+// -------------------------------------------//
+model AgencyCommissionAgreement {
+  id                 String        @id @default(cuid())
+  tenant             Tenant @relation("tenantCommissionAgreements", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId           String
+  agency             AgencyProfile @relation("agencyCommissionAgreements", fields: [agencyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  agencyId           String
+  school             SchoolProfile @relation("schoolCommissionAgreements", fields: [schoolId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  schoolId           String
+  agreementReference String?
+  commissionType     CommissionType
+  commissionValue    Decimal
+  commissionBasis    String? // human-readable: e.g. "eligible tuition excluding taxes"
+  basisJson         Json? // structured calculation basis
+  effectiveStart     DateTime
+  effectiveEnd       DateTime?
+  eligibleIntakes    String[] // "YYYY-MM" intake labels
+  paymentMilestones  Json?
+  minimumSpend       Decimal?
+  document           Document? @relation("documentAgreements", fields: [documentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  documentId         String?
+  status             CommissionStatus @default(DRAFT)
+  notes              String?
+  createdById        String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  rules              CommissionRule[] @relation("agreementRules")
+  quotes             Quote[] @relation("quoteAgreements")
+
+  @@unique([tenantId, agencyId, schoolId, effectiveStart])
+  @@index([tenantId, agencyId, status])
+  @@index([effectiveStart, effectiveEnd])
+  @@index([schoolId])
+}
+
+model CommissionRule {
+  id            String        @id @default(cuid())
+  agreement     AgencyCommissionAgreement @relation("agreementRules", fields: [agreementId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  agreementId   String
+  courseId      String?
+  course        Course? @relation("courseRules", fields: [courseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  campusId      String?
+  campus        Campus? @relation("campusRules", fields: [campusId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  rate          Decimal
+  currency      String @default("AUD")
+  basis         String?
+  effectiveStart DateTime
+  effectiveEnd  DateTime?
+  createdAt     DateTime @default(now())
+
+  @@unique([agreementId, courseId, campusId])
+  @@index([agreementId])
+  @@index([courseId])
+}
+
+// -------------------------------------------//
+// Students, leads, applications
+// -------------------------------------------//
+model Student {
+  id               String              @id @default(cuid())
+  tenant           Tenant @relation("tenantStudents", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId         String
+  firstName        String
+  lastName         String
+  email            String?
+  phone            String?
+  nationality      String?
+  country          String?
+  studyLevel       String?
+  preferredCourse  String?
+  preferredLocation String?
+  preferredIntake  String?
+  assignedCounselorId String?
+  consentGiven     Boolean @default(false)
+  consentAt        DateTime?
+  consentVersion   Int @default(1)
+  notes            String?
+  consents         StudentConsent[] @relation("studentConsents")
+  leads            Lead[] @relation("studentLeads")
+  applications     Application[] @relation("studentApplications")
+  quotes           Quote[] @relation("studentQuotes")
+  documents        Document[] @relation("documentStudents")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([consentGiven])
+}
+
+model StudentConsent {
+  id          String   @id @default(cuid())
+  student     Student @relation("studentConsents", fields: [studentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  studentId   String
+  purpose     StudentConsentPurpose
+  givenAt     DateTime @default(now())
+  version     Int @default(1)
+  expiresAt   DateTime?
+  revokeAt    DateTime?
+  notes       String?
+
+  @@unique([studentId, purpose])
+}
+
+model Lead {
+  id                 String         @id @default(cuid())
+  tenant             Tenant @relation("tenantLeads", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId           String
+  student            Student @relation("studentLeads", fields: [studentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  studentId          String
+  agency             AgencyProfile @relation("agencyLeads", fields: [agencyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  agencyId           String
+  source             String
+  status             LeadStatus @default(NEW)
+  stageHistory       String[]       @default([])
+  notes              String?
+  assignedCounselorId String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  applications       Application[] @relation("studentApplications")
+  @@unique([tenantId, studentId])
+  @@index([tenantId, status])
+  @@index([studentId])
+}
+
+model Application {
+  id                 String         @id @default(cuid())
+  tenant             Tenant @relation("tenantApplications", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId           String
+  student            Student @relation("studentApplications", fields: [studentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  studentId          String
+  lead               Lead? @relation("studentApplications", fields: [leadId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  leadId             String?
+  course             Course @relation("courseApplications", fields: [courseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  courseId           String
+  intake             CourseIntake? @relation("intakeApplications", fields: [intakeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  intakeId           String?
+  quote              Quote? @relation("quoteApplications", fields: [quoteId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  quoteId            String?
+  status             ApplicationStatus @default(NEW)
+  stageHistory       String[]       @default([])
+  documents          Document[] @relation("documentApplications")
+  notes              String?
+  submittedAt        DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([tenantId, studentId, courseId])
+  @@index([tenantId, status])
+  @@index([courseId, intakeId])
+  @@index([studentId])
+}
+
+// -------------------------------------------//
+// Quotes
+// -------------------------------------------//
+model Quote {
+  id                    String                   @id @default(cuid())
+  tenant                Tenant @relation("tenantQuotes", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId              String
+  quoteRef              String                   @unique
+  agency                AgencyProfile @relation("agencyQuotes", fields: [agencyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  agencyId              String
+  student               Student? @relation("studentQuotes", fields: [studentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  studentId             String?
+  school                SchoolProfile @relation("schoolQuotes", fields: [schoolId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  schoolId              String
+  campus                Campus? @relation("campusQuotes", fields: [campusId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  campusId              String?
+  intake                CourseIntake? @relation("intakeQuotes", fields: [intakeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  intakeId              String?
+  items                 QuoteItem[] @relation("quoteItems")
+  documents             Document[] @relation("documentQuotes")
+  agreements            AgencyCommissionAgreement[] @relation("quoteAgreements")
+  pricingSnapshot       QuotePricingSnapshot? @relation("quoteSnapshot")
+  pricingSnapshotId     String? @unique
+  eligibleDiscounts     Json? // list of discounts applied
+  totalEstimate         Decimal
+  commissionEligible    Decimal @default(0) // authorized agency-visible only
+  status                QuoteStatus @default(DRAFT)
+  validFrom             DateTime
+  validUntil            DateTime
+  feeValidityDate       DateTime?
+  feeAcknowledgement    Boolean @default(false)
+  notes                 String?
+  applications          Application[] @relation("quoteApplications")
+  createdById           String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([tenantId, status])
+  @@index([agencyId])
+  @@index([studentId])
+  @@index([validUntil])
+}
+
+model QuoteItem {
+  id          String         @id @default(cuid())
+  quote       Quote @relation("quoteItems", fields: [quoteId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  quoteId     String
+  courseId    String
+  campusId    String?
+  itemType    String
+  description String
+  amount      Decimal
+  currency    String @default("AUD")
+  period      String
+  createdAt   DateTime @default(now())
+
+  @@unique([quoteId, description])
+}
+
+model QuotePricingSnapshot {
+  id            String        @id @default(cuid())
+  quote         Quote? @relation("quoteSnapshot", fields: [quoteId], references: [id])
+  quoteId       String? @unique
+  version       Int           @default(1)
+  snapshotData  Json           // itemized fees, discounts, totals, commission
+  snapshottedAt DateTime @default(now())
+
+  @@unique([quoteId, version])
+  @@index([quoteId])
+}
+
+// -------------------------------------------//
+// Documents
+// -------------------------------------------//
+model Document {
+  id              String              @id @default(cuid())
+  tenant          Tenant @relation("tenantDocuments", map: "Document_tenantId_fkey", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId        String
+  docType         DocumentType
+  name            String
+  storageKey      String              @unique // randomized storage key
+  mimeType        String
+  mimeGroup       String?
+  sizeBytes       Int
+  checksum        String?
+  verified        Boolean @default(false)
+  verifiedBy      String?
+  verifiedAt      DateTime?
+  verificationNotes String?
+  status          DocumentStatus @default(PENDING)
+  expiresAt       DateTime?
+  uploadedById    String
+  uploadedByName  String
+  uploadedAt      DateTime @default(now())
+  quotes          Quote[] @relation("documentQuotes")
+  promotions      PromotionDocument[] @relation("promotionDocuments")
+  agreements      AgencyCommissionAgreement[] @relation("documentAgreements")
+  students        Student[] @relation("documentStudents")
+  applications    Application[] @relation("documentApplications")
+  school          SchoolProfile? @relation("schoolDocuments", map: "Document_schoolId_fkey", fields: [schoolId], references: [id])
+  schoolId        String?
+  campus          Campus? @relation("campusDocuments", map: "Document_campusId_fkey", fields: [campusId], references: [id])
+  campusId        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([docType, status])
+  @@index([expiresAt])
+}
+
+// -------------------------------------------//
+// Cross-tenant / saved / relationships / audit / notifications
+// -------------------------------------------//
+model AgencySavedCourse {
+  id         String    @id @default(cuid())
+  tenant     Tenant @relation("tenantSavedCourses", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId   String
+  agency     AgencyProfile @relation("savedCourseAgency", fields: [agencyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  agencyId   String   @unique
+  school     SchoolProfile @relation("savedCourseSchool", fields: [schoolId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  schoolId   String   @unique
+  course     Course @relation("courseSavedCourses", fields: [courseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  courseId   String
+  savedAt    DateTime @default(now())
+
+  @@unique([tenantId, agencyId, schoolId, courseId])
+  @@index([tenantId, agencyId])
+}
+
+model SchoolAgencyRelationship {
+  id                 String   @id @default(cuid())
+  school             SchoolProfile @relation("schoolContract", fields: [schoolId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  schoolId           String   @unique
+  agency             AgencyProfile @relation("agencyContract", fields: [agencyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  agencyId           String   @unique
+  tenant             Tenant @relation("schoolContract", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId           String
+  agreedFrom         DateTime?
+  agreedUntil        DateTime?
+  status             String   @default("ACTIVE") // ACTIVE | SUSPENDED | TERMINATED
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([schoolId, agencyId])
+  @@index([schoolId])
+  @@index([agencyId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  tenant    Tenant @relation("tenantNotifications", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId  String
+  userId    String
+  user      User @relation("userNotifications", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  type      String
+  title     String
+  body      String?
+  data      Json?
+  read      Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, userId, read])
+}
+
+model AuditLog {
+  id         String          @id @default(cuid())
+  tenant     Tenant @relation("tenantAuditLogs", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId   String
+  userId     String?
+  user       User? @relation("userAuditLogs", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  action     AuditAction
+  entityType String?
+  entityId   String?
+  changes    Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([tenantId, action])
+  @@index([tenantId, createdAt])
+  @@index([entityType, entityId])
+}
+
+model AgencyCommissionRelationship {
+  id         String   @id @default(cuid())
+  agency     AgencyProfile @relation("commissionAgency", fields: [agencyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  agencyId   String   @unique
+  school     SchoolProfile @relation("commissionSchool", fields: [schoolId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  schoolId   String   @unique
+  status     String   @default("ACTIVE")
+  createdAt  DateTime @default(now())
+
+  @@unique([agencyId, schoolId])
+}

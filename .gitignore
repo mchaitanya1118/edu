@@ -1,0 +1,37 @@
+# ==========================================
+# AusEdu Connect - .gitignore
+# Generated alongside the monorepo restructure
+# ==========================================
+
+# Dependencies
+node_modules/
+pnpm-lock.yaml.bak
+
+# Build outputs
+packages/api/dist/
+packages/web/dist/
+
+# Vite / TypeScript build caches
+packages/web/tsconfig.tsbuildinfo
+packages/web/vite.config.d.ts
+packages/web/.vite/
+
+# Next.js (not used in current monorepo, kept for safety)
+.next/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.pem
+
+# OS / editor
+.DS_Store
+*.log
+.idea/
+.vscode/
+*.swp
+
+# Turborepo / other tool caches
+.turbo/
+.cache/
