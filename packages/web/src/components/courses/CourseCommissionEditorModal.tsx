@@ -355,3 +355,4 @@ export function CourseCommissionEditorModal({
     </div>
   );
 }
+
