@@ -103,7 +103,7 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
 
   const schoolAdminNav: NavItem[] = [
     { section: 'Campus Operations', icon: LayoutDashboard, label: 'Executive Overview', href: '/school-admin/dashboard' },
-    { section: 'Campus Operations', icon: BookOpen, label: 'CRICOS Courses', href: '/courses', badge: '12' },
+    { section: 'Campus Operations', icon: BookOpen, label: 'CRICOS Courses & Commissions', href: '/courses', badge: '12' },
     { section: 'Campus Operations', icon: Sparkles, label: 'Promos & Scholarships', href: '/provider-promo', badge: 'Live' },
     { section: 'Admissions & Finance', icon: Users, label: 'Enrolments & CoEs', href: '/students', badge: '4' },
     { section: 'Admissions & Finance', icon: FileText, label: 'Quotes & Invoices', href: '/quotes' },

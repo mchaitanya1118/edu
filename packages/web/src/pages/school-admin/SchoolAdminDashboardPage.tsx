@@ -22,8 +22,13 @@ import {
   Download,
   X,
   Sliders,
+  Percent,
 } from 'lucide-react';
 import { useToast } from '../../components/ui/Toast';
+import {
+  CourseCommissionEditorModal,
+  CourseCommissionConfig,
+} from '../../components/courses/CourseCommissionEditorModal';
 
 type ApplicationItem = {
   id: string;
@@ -129,8 +134,29 @@ const INITIAL_CAMPUS_CAPACITY = [
   },
 ];
 
-const PUBLISHED_COURSES = [
+type SchoolCourseItem = {
+  id: string;
+  name: string;
+  cricos: string;
+  standardRate: string;
+  promoRate: string;
+  promoTag: string;
+  enrolments: number;
+  intakeStatus: string;
+  numericTuition: number;
+  commissionRate: number;
+  tier1Rate: number;
+  platinumRate: number;
+  basis: 'Net Tuition' | 'Gross Standard Tuition' | 'Fixed AUD per Student';
+  schedule: '50% CoE / 50% Census' | '100% on Census Date' | 'Trimester Pro-Rata';
+  agreementRef: string;
+  intakeBonusPercent: number;
+  notes?: string;
+};
+
+const INITIAL_PUBLISHED_COURSES: SchoolCourseItem[] = [
   {
+    id: 'CRS-01',
     name: 'General English (ELICOS)',
     cricos: '098412B',
     standardRate: '$350/wk',
@@ -138,8 +164,18 @@ const PUBLISHED_COURSES = [
     promoTag: '20% Q3 Scholarship',
     enrolments: 412,
     intakeStatus: 'Open • Weekly Monday',
+    numericTuition: 5600,
+    commissionRate: 25,
+    tier1Rate: 28,
+    platinumRate: 30,
+    basis: 'Net Tuition',
+    schedule: '50% CoE / 50% Census',
+    agreementRef: 'APC-ELICOS-2026-T1',
+    intakeBonusPercent: 2,
+    notes: '25% base commission across all 20-week English enrolments.',
   },
   {
+    id: 'CRS-02',
     name: 'Diploma of Leadership & Management',
     cricos: '104112A',
     standardRate: '$8,000/yr',
@@ -147,8 +183,18 @@ const PUBLISHED_COURSES = [
     promoTag: '15% LATAM & EU Grant',
     enrolments: 289,
     intakeStatus: 'Open • 14 Jul 2026',
+    numericTuition: 6800,
+    commissionRate: 22,
+    tier1Rate: 25,
+    platinumRate: 28,
+    basis: 'Net Tuition',
+    schedule: '50% CoE / 50% Census',
+    agreementRef: 'APC-BSB50420-2026-T1',
+    intakeBonusPercent: 3,
+    notes: 'Preferred VET management stream. High visa conversion rate.',
   },
   {
+    id: 'CRS-03',
     name: 'Certificate IV in Marketing & Communication',
     cricos: '105881E',
     standardRate: '$7,600/yr',
@@ -156,8 +202,18 @@ const PUBLISHED_COURSES = [
     promoTag: '$1,200 Fee Waiver',
     enrolments: 194,
     intakeStatus: 'Open • 14 Jul 2026',
+    numericTuition: 6400,
+    commissionRate: 20,
+    tier1Rate: 22,
+    platinumRate: 25,
+    basis: 'Net Tuition',
+    schedule: '50% CoE / 50% Census',
+    agreementRef: 'GRW-BSB40820-2026-T1',
+    intakeBonusPercent: 0,
+    notes: '20% base agency rate with +2% bonus upon 5 enrolled students.',
   },
   {
+    id: 'CRS-04',
     name: 'Advanced Diploma of Information Technology',
     cricos: '108721M',
     standardRate: '$10,400/yr',
@@ -165,12 +221,23 @@ const PUBLISHED_COURSES = [
     promoTag: 'Free Material Fee',
     enrolments: 156,
     intakeStatus: 'Filling Fast • 07 Sep 2026',
+    numericTuition: 9200,
+    commissionRate: 22,
+    tier1Rate: 25,
+    platinumRate: 28,
+    basis: 'Net Tuition',
+    schedule: '50% CoE / 50% Census',
+    agreementRef: 'ILSC-ICT60220-2026-T1',
+    intakeBonusPercent: 0,
+    notes: 'High demand telecommunications & cloud networking specialization.',
   },
 ];
 
 export default function SchoolAdminDashboardPage() {
   const { toast } = useToast();
   const [applications, setApplications] = useState<ApplicationItem[]>(INITIAL_APPLICATIONS);
+  const [courses, setCourses] = useState<SchoolCourseItem[]>(INITIAL_PUBLISHED_COURSES);
+  const [editingCommissionCourse, setEditingCommissionCourse] = useState<SchoolCourseItem | null>(null);
   const [selectedCampus, setSelectedCampus] = useState<string>('All');
   const [selectedIntake, setSelectedIntake] = useState<string>('All');
   const [inspectedApp, setInspectedApp] = useState<ApplicationItem | null>(null);
@@ -195,6 +262,27 @@ export default function SchoolAdminDashboardPage() {
       });
     }
     toast(`PRISMS CoE (${generatedCoE}) issued and dispatched for ${student}`, 'success');
+  };
+
+  const handleSaveCommission = (updated: CourseCommissionConfig) => {
+    setCourses((prev) =>
+      prev.map((c) =>
+        c.cricos === updated.cricosCode
+          ? {
+              ...c,
+              commissionRate: updated.commissionRate,
+              tier1Rate: updated.tier1Rate ?? c.tier1Rate,
+              platinumRate: updated.platinumRate ?? c.platinumRate,
+              basis: updated.basis,
+              schedule: updated.schedule,
+              agreementRef: updated.agreementRef,
+              intakeBonusPercent: updated.intakeBonusPercent,
+              notes: updated.notes,
+            }
+          : c
+      )
+    );
+    setEditingCommissionCourse(null);
   };
 
   const filteredApplications = applications.filter((a) => {
@@ -570,44 +658,77 @@ export default function SchoolAdminDashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {PUBLISHED_COURSES.map((course) => (
-              <div
-                key={course.cricos}
-                className="p-4 rounded-xl border border-slate-200/90 bg-white hover:border-blue-300 hover:shadow-xs transition-all flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2.5">
-                    <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                      CRICOS {course.cricos}
-                    </span>
-                    <Badge variant="success">{course.promoTag}</Badge>
-                  </div>
-                  <h3 className="text-sm font-bold text-slate-900 leading-snug mb-3">
-                    {course.name}
-                  </h3>
-                </div>
+            {courses.map((course) => {
+              const estimatedCommission = Math.round((course.numericTuition * course.commissionRate) / 100);
+              return (
+                <div
+                  key={course.cricos}
+                  className="p-4 rounded-xl border border-slate-200/90 bg-white hover:border-blue-300 hover:shadow-xs transition-all flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2.5">
+                      <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                        CRICOS {course.cricos}
+                      </span>
+                      <Badge variant="success">{course.promoTag}</Badge>
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-900 leading-snug mb-2">
+                      {course.name}
+                    </h3>
 
-                <div className="pt-3 border-t border-slate-100 space-y-2">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-xs text-slate-500">Promo Tuition</span>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-xs text-slate-400 line-through">
-                        {course.standardRate}
-                      </span>
-                      <span className="text-base font-bold text-emerald-700">
-                        {course.promoRate}
-                      </span>
+                    {/* Agent Commission Pill for this Course */}
+                    <div className="p-2.5 rounded-lg bg-emerald-50/70 border border-emerald-100 mb-3 space-y-1">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-semibold text-emerald-950 flex items-center gap-1">
+                          <Percent className="w-3 h-3 text-emerald-600" />
+                          Agent Base:
+                        </span>
+                        <span className="font-mono font-bold text-emerald-800">
+                          {course.commissionRate}%
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] text-slate-500">
+                        <span>Tier-1 Partner:</span>
+                        <span className="font-mono font-bold text-slate-700">{course.tier1Rate}%</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] text-emerald-700 pt-1 border-t border-emerald-200/50">
+                        <span>Est. payout / student:</span>
+                        <span className="font-bold">A${estimatedCommission.toLocaleString()}</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between text-[11px] text-slate-500">
-                    <span>{course.intakeStatus}</span>
-                    <span className="font-semibold text-slate-700">
-                      {course.enrolments} enrolled
-                    </span>
+
+                  <div className="pt-3 border-t border-slate-100 space-y-2.5">
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xs text-slate-500">Promo Tuition</span>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-xs text-slate-400 line-through">
+                          {course.standardRate}
+                        </span>
+                        <span className="text-base font-bold text-emerald-700">
+                          {course.promoRate}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] text-slate-500">
+                      <span>{course.intakeStatus}</span>
+                      <span className="font-semibold text-slate-700">
+                        {course.enrolments} enrolled
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setEditingCommissionCourse(course)}
+                      className="w-full inline-flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-colors cursor-pointer"
+                    >
+                      <Sliders className="w-3.5 h-3.5" />
+                      Edit Course Commission
+                    </button>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </Card>
 
@@ -750,6 +871,29 @@ export default function SchoolAdminDashboardPage() {
               </div>
             </Card>
           </div>
+        )}
+        {/* Modal: Edit Course Commission for School Admin */}
+        {editingCommissionCourse && (
+          <CourseCommissionEditorModal
+            isOpen={Boolean(editingCommissionCourse)}
+            config={{
+              courseId: editingCommissionCourse.id,
+              courseName: editingCommissionCourse.name,
+              cricosCode: editingCommissionCourse.cricos,
+              provider: 'Australian Pacific College & Partner CRICOS Network',
+              tuitionFee: editingCommissionCourse.numericTuition,
+              commissionRate: editingCommissionCourse.commissionRate,
+              tier1Rate: editingCommissionCourse.tier1Rate,
+              platinumRate: editingCommissionCourse.platinumRate,
+              basis: editingCommissionCourse.basis,
+              schedule: editingCommissionCourse.schedule,
+              agreementRef: editingCommissionCourse.agreementRef,
+              intakeBonusPercent: editingCommissionCourse.intakeBonusPercent,
+              notes: editingCommissionCourse.notes,
+            }}
+            onClose={() => setEditingCommissionCourse(null)}
+            onSave={handleSaveCommission}
+          />
         )}
       </div>
     </AppLayout>
