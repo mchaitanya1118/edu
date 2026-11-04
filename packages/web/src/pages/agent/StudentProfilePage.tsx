@@ -4,7 +4,25 @@ import { useState } from 'react';
 import { Badge } from '../../components/ui/Badge';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { FileText, Users, BookOpen, Clock, Calendar, DollarSign, CheckCircle, MapPin, Globe, Star, ChevronRight, AlertTriangle } from 'lucide-react';
+import {
+  FileText,
+  Users,
+  BookOpen,
+  Clock,
+  Calendar,
+  DollarSign,
+  CheckCircle,
+  MapPin,
+  Globe,
+  Star,
+  ChevronRight,
+  AlertTriangle,
+  Sparkles,
+  CreditCard,
+  Download,
+  ShieldCheck,
+} from 'lucide-react';
+import { useToast } from '../../components/ui/Toast';
 
 const initialStudent = {
   id: 'STU-001',
@@ -42,28 +60,52 @@ const initialStudent = {
   hasAddress: true,
   hasTfn: false,
   hasBankAccount: false,
+  tuitionFee: 28800,
+  commissionRate: 22,
+  commissionTier: 'Preferred Tier 1',
+  commissionAmount: 6336,
+  commissionStatus: 'Available for Payout',
+  agreementRef: 'APC-2026-T1-AGY',
+  rctiNumber: 'RCTI-2026-088',
 };
 
 const studentPayments = [
-  { label: 'Tuition Fee', value: 28800, dueDate: '15/12/2025', paid: false },
-  { label: 'Material Fee', value: 720, dueDate: '15/12/2025', paid: false },
+  { label: 'Tuition Fee', value: 28800, dueDate: '15/12/2025', paid: true },
+  { label: 'Material Fee', value: 720, dueDate: '15/12/2025', paid: true },
   { label: 'Reflection Fee', value: 0, dueDate: '15/12/2025', paid: false },
 ];
 
 export default function StudentProfile() {
+  const { toast } = useToast();
   const [student, setStudent] = useState(initialStudent);
   const [payments, setPayments] = useState(studentPayments);
   const [isEditing, setIsEditing] = useState(false);
+  const [commissionClaimed, setCommissionClaimed] = useState(false);
 
   const handlePayment = (label: string) => {
-    alert(`${label} payment processed`);
+    toast(`${label} payment status refreshed`, 'info');
+  };
+
+  const handleClaimCommission = () => {
+    setCommissionClaimed(true);
+    setStudent((prev) => ({ ...prev, commissionStatus: 'Disbursed' }));
+    toast(
+      `Commission payout of A$${(student.commissionAmount / 2).toLocaleString()} AUD processed for ${student.fullName}. RCTI generated.`,
+      'success'
+    );
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white tracking-tight">Student Profile</h1>
-        <Button variant="outline" size="sm"><FileText className="w-3.5 h-3.5" /> Download</Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => toast(`Downloaded student summary for ${student.fullName}`, 'success')}
+        >
+          <FileText className="w-3.5 h-3.5" /> Download Summary
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -87,7 +129,13 @@ export default function StudentProfile() {
                 <Button variant="outline" size="sm" onClick={() => setIsEditing(!isEditing)}>
                   {isEditing ? 'Cancel' : 'Edit Profile'}
                 </Button>
-                <Button variant="default" size="sm"><FileText className="w-3.5 h-3.5" /> Upload</Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => toast('Uploaded new compliance document', 'success')}
+                >
+                  <FileText className="w-3.5 h-3.5" /> Upload
+                </Button>
               </div>
             </div>
 
@@ -109,39 +157,40 @@ export default function StudentProfile() {
               <div className="space-y-3">
                 <div className="flex items-center gap-2.5">
                   <MapPin className="w-4 h-4 text-white/40 shrink-0" />
-                  <Button variant="ghost" size="sm" className="flex-1 justify-start text-left">
-                    <span className="text-sm text-foreground">{student.addressLine1}</span>
-                    {student.addressLine2 && <span className="text-xs text-white/40 block">{student.addressLine2}</span>}
-                    <span className="text-xs text-white/40 block">{student.city}, {student.state} {student.postalCode}</span>
-                  </Button>
+                  <div className="text-left">
+                    <span className="text-sm text-foreground block">{student.addressLine1}</span>
+                    <span className="text-xs text-white/40 block">
+                      {student.city}, {student.state} {student.postalCode}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Globe className="w-4 h-4 text-white/40 shrink-0" />
-                  <Button variant="ghost" size="sm" className="flex-1 justify-start text-left">
-                    <span className="text-sm text-foreground">+61 400 000 000</span>
-                    <span className="text-xs text-white/40">Sydney, Australia</span>
-                  </Button>
+                  <div className="text-left">
+                    <span className="text-sm text-foreground block">{student.contactNumber}</span>
+                    <span className="text-xs text-white/40 block">Sydney, Australia</span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <FileText className="w-4 h-4 text-white/40 shrink-0" />
-                  <Button variant="ghost" size="sm" className="flex-1 justify-start text-left">
-                    <span className="text-sm text-foreground">{student.email}</span>
-                    <span className="text-xs text-white/40">{student.gender}</span>
-                  </Button>
+                  <div className="text-left">
+                    <span className="text-sm text-foreground block">{student.email}</span>
+                    <span className="text-xs text-white/40 block">{student.gender}</span>
+                  </div>
                 </div>
               </div>
             </Card>
 
             <Card className="p-5 border-border/70">
-              <h3 className="text-base font-semibold text-foreground mb-3">Student ID</h3>
+              <h3 className="text-base font-semibold text-foreground mb-3">Student Demographics</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 rounded-xl bg-white/5">
                   <span className="text-sm text-white/50">Student ID</span>
                   <span className="text-sm font-medium text-foreground">{student.studentId}</span>
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-xl bg-white/5">
-                  <span className="text-sm text-white/50">Gender</span>
-                  <span className="text-sm font-medium text-foreground">{student.gender}</span>
+                  <span className="text-sm text-white/50">Nationalities</span>
+                  <span className="text-sm font-medium text-foreground">{student.nationalities}</span>
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-xl bg-white/5">
                   <span className="text-sm text-white/50">Country</span>
@@ -156,10 +205,16 @@ export default function StudentProfile() {
           </div>
 
           <Card className="p-5 border-border/70">
-            <h3 className="text-base font-semibold text-foreground mb-4">Education Profile</h3>
+            <h3 className="text-base font-semibold text-foreground mb-4">Enrolled Course</h3>
             <div className="space-y-3">
               {[
-                { course: 'SIT30816', name: 'Commercial Cookery Certificate III', date: '2025-2026', location: 'Sydney', type: 'VET' },
+                {
+                  course: 'SIT30816',
+                  name: 'Commercial Cookery Certificate III',
+                  date: '2025-2026',
+                  location: 'Sydney CBD Campus',
+                  type: 'CRICOS VET',
+                },
               ].map((e, i) => (
                 <div key={i} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
                   <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0">
@@ -180,10 +235,89 @@ export default function StudentProfile() {
           </Card>
         </div>
 
+        {/* Right Sidebar: Fees, Outline & Agent Commission */}
         <div className="space-y-5">
+          {/* Agent Commission from this Student */}
+          <Card className="p-5 border-emerald-500/40 bg-gradient-to-br from-emerald-950/20 via-slate-900/40 to-slate-900/60 space-y-3.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-emerald-400" />
+                <h3 className="text-base font-bold text-emerald-400">Agent Commission</h3>
+              </div>
+              <Badge variant="success" className="text-[10px] bg-emerald-500/20 text-emerald-300 border-emerald-500/40">
+                {student.commissionRate}% Tier
+              </Badge>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between text-white/60">
+                <span>Tuition Base:</span>
+                <span className="font-mono text-white font-medium">{formatCurrency(student.tuitionFee)}</span>
+              </div>
+              <div className="flex justify-between text-white/60">
+                <span>Agreement Ref:</span>
+                <span className="font-mono text-white font-medium">{student.agreementRef}</span>
+              </div>
+              <div className="border-t border-white/10 pt-2 flex justify-between items-baseline">
+                <span className="font-semibold text-white">Gross Commission:</span>
+                <span className="font-mono font-bold text-base text-emerald-400">
+                  {formatCurrency(student.commissionAmount)} AUD
+                </span>
+              </div>
+            </div>
+
+            {/* Milestones */}
+            <div className="pt-2 border-t border-white/10 space-y-2 text-xs">
+              <div className="flex items-center justify-between p-2 rounded-lg bg-white/5">
+                <div>
+                  <span className="font-medium text-white block">Milestone 1: Deposit Clearance (50%)</span>
+                  <span className="text-[10px] text-emerald-400">Disbursed • {formatCurrency(student.commissionAmount / 2)}</span>
+                </div>
+                <Badge variant="success" className="text-[9px]">Paid</Badge>
+              </div>
+
+              <div className="flex items-center justify-between p-2 rounded-lg bg-white/5">
+                <div>
+                  <span className="font-medium text-white block">Milestone 2: Census Date Clearance (50%)</span>
+                  <span className="text-[10px] text-white/50">
+                    {commissionClaimed ? 'Disbursed' : 'Available for Payout'} • {formatCurrency(student.commissionAmount / 2)}
+                  </span>
+                </div>
+                <Badge variant={commissionClaimed ? 'success' : 'purple'} className="text-[9px]">
+                  {commissionClaimed ? 'Paid' : 'Ready'}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="pt-2 flex flex-col gap-2">
+              {!commissionClaimed ? (
+                <Button
+                  onClick={handleClaimCommission}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1.5"
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  Claim Payout ({formatCurrency(student.commissionAmount / 2)})
+                </Button>
+              ) : (
+                <div className="text-center py-1 text-xs text-emerald-400 font-semibold flex items-center justify-center gap-1">
+                  <CheckCircle className="w-3.5 h-3.5" /> All Milestones Settled
+                </div>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => toast(`Downloaded ${student.rctiNumber} (.pdf)`, 'success')}
+                className="w-full text-xs gap-1"
+              >
+                <Download className="w-3.5 h-3.5" /> Download RCTI ({student.rctiNumber})
+              </Button>
+            </div>
+          </Card>
+
+          {/* Student Tuition Due */}
           <Card className="p-5 border-border/70">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-semibold text-foreground">Student ID</h3>
+              <h3 className="text-base font-semibold text-foreground">Tuition &amp; Fees</h3>
               <FileText className="w-4 h-4 text-indigo-400" />
             </div>
             <div className="space-y-2.5">
@@ -206,24 +340,7 @@ export default function StudentProfile() {
             </div>
           </Card>
 
-          <Card className="p-5 border-border/70">
-            <h3 className="text-base font-semibold text-foreground mb-3">Outline of Course</h3>
-            <div className="space-y-3">
-              {[
-                { label: 'Duration', value: '12 months', icon: Clock, color: 'bg-indigo-500/10 text-indigo-400' },
-                { label: 'Students', value: '52', icon: Users, color: 'bg-emerald-500/10 text-emerald-400' },
-                { label: 'Contact', value: 'Online / On-campus', icon: MapPin, color: 'bg-amber-500/10 text-amber-400' },
-              ].map((s, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all">
-                  <div className={`w-8 h-8 rounded-lg ${s.color} flex items-center justify-center shrink-0`}>
-                    <s.icon className="w-4 h-4" />
-                  </div>
-                  <span className="text-sm font-medium text-foreground">{s.value}</span>
-                </div>
-              ))}
-            </div>
-          </Card>
-
+          {/* Payments */}
           <Card className="p-5 border-border/70">
             <h3 className="text-base font-semibold text-foreground mb-3">Payments</h3>
             <div className="space-y-2.5">

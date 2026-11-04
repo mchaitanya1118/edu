@@ -4,6 +4,7 @@ import LoginPage from './pages/auth/LoginPage';
 import SignUpPage from './pages/auth/SignUpPage';
 import AgentDashboard from './pages/agent/AgentDashboardPage';
 import AgentDocuments from './pages/agent/AgentDocumentsPage';
+import AgentCommissionsPage from './pages/agent/AgentCommissionsPage';
 import StudentPipeline from './pages/agent/StudentPipelinePage';
 import StudentProfilePage from './pages/agent/StudentProfilePage';
 import EduConnectApplication from './pages/agent/ApplicationFormPage';
@@ -42,6 +43,7 @@ export default function App() {
 
         {/* Agent portal */}
         <Route path="/agent/dashboard" element={<AgentDashboard />} />
+        <Route path="/agent/commissions" element={<AgentCommissionsPage />} />
         <Route path="/agent/documents" element={<AgentDocuments />} />
         <Route path="/agent/pipeline" element={<StudentPipeline />} />
         <Route path="/agent/schools" element={<PortalPage />} />
