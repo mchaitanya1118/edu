@@ -23,6 +23,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { useToast } from '../../components/ui/Toast';
+import { DocumentViewerModal, ViewableDocument } from '../../components/documents/DocumentViewerModal';
 
 export type StudentRecord = {
   id: string;
@@ -208,6 +209,7 @@ export default function StudentsPage() {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [inspectedStudent, setInspectedStudent] = useState<StudentRecord | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [viewingDoc, setViewingDoc] = useState<ViewableDocument | null>(null);
 
   // Form state
   const [newName, setNewName] = useState('');
@@ -746,25 +748,65 @@ export default function StudentsPage() {
                   ))}
                 </div>
 
-                {/* Subclass 500 Visa & Admissions Checklist */}
+                {/* Subclass 500 Visa & Admissions Checklist with Document Viewing */}
                 <div className="space-y-2.5 text-xs">
                   <span className="font-bold uppercase tracking-wider text-slate-400 block">
-                    Subclass 500 Visa &amp; Admissions Checklist
+                    Subclass 500 Visa &amp; Admissions Checklist &amp; Uploaded Documents
                   </span>
                   {[
-                    'Valid Passport Bio Page & National ID Verified',
-                    'Genuine Student (GS) Financial Capacity Cleared',
-                    'English Proficiency (IELTS 6.0 / Internal Placement) Met',
-                    inspectedStudent.oshcIncluded
-                      ? 'Overseas Student Health Cover (OSHC) Policy Issued'
-                      : 'OSHC Policy Pending External Upload',
+                    {
+                      label: 'Valid Passport Bio Page & National ID Verified',
+                      file: `${inspectedStudent.name.replace(/\s+/g, '_')}_Passport.pdf`,
+                      type: 'Passport Bio Page',
+                    },
+                    {
+                      label: 'Genuine Student (GS) Financial Capacity Cleared',
+                      file: `${inspectedStudent.name.replace(/\s+/g, '_')}_GS_Statement.pdf`,
+                      type: 'Statement of Purpose / GS',
+                    },
+                    {
+                      label: 'English Proficiency (IELTS 6.0 / Internal Placement) Met',
+                      file: `${inspectedStudent.name.replace(/\s+/g, '_')}_IELTS_TRF.pdf`,
+                      type: 'English Test Report',
+                    },
+                    {
+                      label: inspectedStudent.oshcIncluded
+                        ? 'Overseas Student Health Cover (OSHC) Policy Issued'
+                        : 'OSHC Policy Pending External Upload',
+                      file: `${inspectedStudent.name.replace(/\s+/g, '_')}_OSHC_Policy.pdf`,
+                      type: 'OSHC Health Policy',
+                    },
                   ].map((item) => (
                     <div
-                      key={item}
-                      className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center gap-2.5"
+                      key={item.label}
+                      className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-2.5"
                     >
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span className="font-medium text-slate-800">{item}</span>
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <div className="min-w-0">
+                          <span className="font-medium text-slate-800 block truncate">{item.label}</span>
+                          <span className="text-[10px] text-slate-400 font-mono block truncate">{item.file}</span>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() =>
+                          setViewingDoc({
+                            name: item.file,
+                            docType: item.type,
+                            studentName: inspectedStudent.name,
+                            status: 'Verified',
+                            size: '1.8 MB',
+                            uploadedAt: '02 Nov 2026',
+                          })
+                        }
+                        className="h-7 px-2 text-xs font-semibold gap-1 shrink-0 text-blue-700 bg-blue-50/80 hover:bg-blue-100 border-blue-200"
+                        title="View and preview uploaded document"
+                      >
+                        <Eye className="w-3 h-3 text-blue-600" />
+                        View
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -882,6 +924,14 @@ export default function StudentsPage() {
               </form>
             </Card>
           </div>
+        )}
+
+        {/* Uploaded Document Preview Viewer Modal */}
+        {viewingDoc && (
+          <DocumentViewerModal
+            document={viewingDoc}
+            onClose={() => setViewingDoc(null)}
+          />
         )}
       </div>
     </AppLayout>

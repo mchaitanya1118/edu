@@ -21,8 +21,10 @@ import {
   CreditCard,
   Download,
   ShieldCheck,
+  Eye,
 } from 'lucide-react';
 import { useToast } from '../../components/ui/Toast';
+import { DocumentViewerModal, ViewableDocument } from '../../components/documents/DocumentViewerModal';
 
 const initialStudent = {
   id: 'STU-001',
@@ -81,6 +83,7 @@ export default function StudentProfile() {
   const [payments, setPayments] = useState(studentPayments);
   const [isEditing, setIsEditing] = useState(false);
   const [commissionClaimed, setCommissionClaimed] = useState(false);
+  const [viewingDoc, setViewingDoc] = useState<ViewableDocument | null>(null);
 
   const handlePayment = (label: string) => {
     toast(`${label} payment status refreshed`, 'info');
@@ -99,13 +102,32 @@ export default function StudentProfile() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white tracking-tight">Student Profile</h1>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => toast(`Downloaded student summary for ${student.fullName}`, 'success')}
-        >
-          <FileText className="w-3.5 h-3.5" /> Download Summary
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setViewingDoc({
+                name: `${student.fullName.replace(/\s+/g, '_')}_Summary_Passport.pdf`,
+                docType: 'Passport Bio Page & CoE Verification',
+                studentName: student.fullName,
+                status: 'Verified',
+                size: '2.1 MB',
+                uploadedAt: 'Today',
+              })
+            }
+            className="text-xs gap-1.5"
+          >
+            <Eye className="w-3.5 h-3.5 text-blue-400" /> View Document
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => toast(`Downloaded student summary for ${student.fullName}`, 'success')}
+          >
+            <FileText className="w-3.5 h-3.5" /> Download Summary
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -303,14 +325,33 @@ export default function StudentProfile() {
                   <CheckCircle className="w-3.5 h-3.5" /> All Milestones Settled
                 </div>
               )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => toast(`Downloaded ${student.rctiNumber} (.pdf)`, 'success')}
-                className="w-full text-xs gap-1"
-              >
-                <Download className="w-3.5 h-3.5" /> Download RCTI ({student.rctiNumber})
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setViewingDoc({
+                      name: `${student.rctiNumber}.pdf`,
+                      docType: 'Recipient Created Tax Invoice (RCTI)',
+                      studentName: student.fullName,
+                      status: 'Verified',
+                      size: '1.4 MB',
+                      uploadedAt: 'Today',
+                    })
+                  }
+                  className="flex-1 text-xs gap-1"
+                >
+                  <Eye className="w-3.5 h-3.5 text-blue-400" /> View RCTI
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => toast(`Downloaded ${student.rctiNumber} (.pdf)`, 'success')}
+                  className="flex-1 text-xs gap-1"
+                >
+                  <Download className="w-3.5 h-3.5" /> Download
+                </Button>
+              </div>
             </div>
           </Card>
 
@@ -360,6 +401,14 @@ export default function StudentProfile() {
           </Card>
         </div>
       </div>
+
+      {/* Uploaded Document Viewer Modal */}
+      {viewingDoc && (
+        <DocumentViewerModal
+          document={viewingDoc}
+          onClose={() => setViewingDoc(null)}
+        />
+      )}
     </div>
   );
 }

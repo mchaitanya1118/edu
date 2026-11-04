@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react';
-import { X, Upload, CheckCircle2, AlertCircle, FileText, CreditCard, BookOpen, Globe, ShieldCheck, ChevronRight, MapPin, GraduationCap, DollarSign } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, Upload, CheckCircle2, AlertCircle, FileText, CreditCard, BookOpen, Globe, ShieldCheck, ChevronRight, MapPin, GraduationCap, DollarSign, Eye, Download } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { useAuth } from '../../hooks/useAuth';
 import { isAgent } from '../../hooks/useAuth';
+import { useToast } from '../../components/ui/Toast';
+import { DocumentViewerModal, ViewableDocument } from '../../components/documents/DocumentViewerModal';
 
 // ── Step Configuration ──────────────────────────────────
 const ALL_STEPS = [
@@ -23,12 +25,47 @@ const TARGET_SCHOOL = 'Sydney International College';
 // ── Component ───────────────────────────────────────────
 export default function EduConnectApplication() {
   const { role } = useAuth();
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const agencyOnly = isAgent(role);
   const STEPS = agencyOnly ? ALL_STEPS : ALL_STEPS.filter(s => s.key !== 'internal');
   const TOTAL_STEPS = STEPS.length;
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [modalOpen, setModalOpen] = useState(true);
+  const [viewingDoc, setViewingDoc] = useState<ViewableDocument | null>(null);
+
+  const [appDocs, setAppDocs] = useState([
+    { id: 'DOC-1', name: 'Passport.pdf', docType: 'Passport Bio Page', status: 'uploaded' as const, size: '2.4 MB', date: '02 Nov 2026' },
+    { id: 'DOC-2', name: 'Transcript_HighSchool.pdf', docType: 'Academic Transcript', status: 'pending' as const, size: '1.8 MB', date: 'Pending' },
+    { id: 'DOC-3', name: 'Statement_of_Purpose.pdf', docType: 'Genuine Student Statement', status: 'uploaded' as const, size: '1.2 MB', date: '02 Nov 2026' },
+    { id: 'DOC-4', name: 'English_Test_Report.pdf', docType: 'IELTS Academic TRF', status: 'pending' as const, size: '950 KB', date: 'Pending' },
+  ]);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const newFiles = Array.from(files).map((f, i) => ({
+      id: `DOC-NEW-${Date.now()}-${i}`,
+      name: f.name,
+      docType: f.name.toLowerCase().includes('passport')
+        ? 'Passport Bio Page'
+        : f.name.toLowerCase().includes('transcript')
+        ? 'Academic Transcript'
+        : f.name.toLowerCase().includes('english') || f.name.toLowerCase().includes('ielts')
+        ? 'English Test Report'
+        : 'Uploaded Admissions Document',
+      status: 'uploaded' as const,
+      size: `${Math.max(0.1, Number((f.size / (1024 * 1024)).toFixed(1)))} MB`,
+      date: 'Just now',
+    }));
+    setAppDocs((prev) => [...newFiles, ...prev]);
+    toast(`Uploaded ${files.length} document(s) successfully! Click "View" to preview.`, 'success');
+  };
+
+  const handleTriggerUpload = () => {
+    fileInputRef.current?.click();
+  };
 
   // Clamp step to visible range when role/steps change
   useEffect(() => {
@@ -139,7 +176,7 @@ export default function EduConnectApplication() {
                 {step === 1 && renderPassportVisaForm()}
                 {step === 2 && renderCourseStudyForm()}
                 {step === 3 && renderEducationOSHCForm()}
-                {step === 4 && renderDocumentsForm()}
+                {step === 4 && renderDocumentsForm(appDocs, (doc) => setViewingDoc({ id: doc.id, name: doc.name, docType: doc.docType, studentName: STUDENT_NAME, uploadedAt: doc.date, size: doc.size, status: 'Verified' }), handleTriggerUpload, fileInputRef, handleFileUpload)}
                 {step === 5 && renderCommissionTrackingForm()}
               </div>
 
@@ -234,6 +271,14 @@ export default function EduConnectApplication() {
 
         </div>
       </div>
+
+      {/* Uploaded Document Viewer Modal */}
+      {viewingDoc && (
+        <DocumentViewerModal
+          document={viewingDoc}
+          onClose={() => setViewingDoc(null)}
+        />
+      )}
     </div>
   );
 }
@@ -519,49 +564,109 @@ function renderEducationOSHCForm() {
 }
 
 // ── Step 5: Documents & Submit ──────────────────────────
-function renderDocumentsForm() {
+function renderDocumentsForm(
+  docs: Array<{ id: string; name: string; docType: string; status: 'uploaded' | 'pending'; size: string; date: string }>,
+  onViewDoc: (doc: { id: string; name: string; docType: string; status: 'uploaded' | 'pending'; size: string; date: string }) => void,
+  onTriggerUpload: () => void,
+  fileInputRef: React.RefObject<HTMLInputElement>,
+  onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
+) {
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Upload className="w-5 h-5 text-primary" />
-        <h3 className="text-sm font-bold text-gray-900">Required Documents</h3>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Upload className="w-5 h-5 text-primary" />
+          <h3 className="text-sm font-bold text-gray-900">Required Documents &amp; Verification</h3>
+        </div>
+        <span className="text-xs text-slate-500 font-medium">
+          {docs.filter(d => d.status === 'uploaded').length} of {docs.length} Uploaded
+        </span>
       </div>
+
+      {/* Hidden genuine file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        className="hidden"
+        onChange={onFileUpload}
+        accept=".pdf,.png,.jpg,.jpeg"
+      />
 
       {/* Drag-and-drop upload area */}
-      <div className="rounded-xl border-2 border-dashed border-[#E2E8F0] p-6 text-center hover:border-blue-300 hover:bg-blue-50/20 transition-all cursor-pointer group">
-        <Upload className="w-8 h-8 text-gray-300 mx-auto mb-2 group-hover:text-blue-500 transition-colors" />
-        <p className="text-sm font-semibold text-gray-600">Drag &amp; drop files here, or <span className="text-primary underline cursor-pointer">browse to upload</span></p>
-        <p className="text-[10px] text-gray-400 mt-1">Accepts PDF, PNG, JPG — Max 10MB per file</p>
+      <div
+        onClick={onTriggerUpload}
+        className="rounded-xl border-2 border-dashed border-[#E2E8F0] p-6 text-center hover:border-blue-500 hover:bg-blue-50/20 transition-all cursor-pointer group"
+      >
+        <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2 group-hover:text-blue-600 transition-colors" />
+        <p className="text-sm font-semibold text-gray-700">
+          Drag &amp; drop student files here, or <span className="text-blue-600 underline font-bold">browse to upload</span>
+        </p>
+        <p className="text-[11px] text-gray-400 mt-1">Accepts PDF, PNG, JPG — Max 10MB per file</p>
       </div>
 
-      {/* Uploaded documents list */}
-      <div className="space-y-2">
-        {[
-          { name: 'Passport.pdf', status: 'uploaded' as const },
-          { name: 'Transcript_HighSchool.pdf', status: 'pending' as const },
-          { name: 'Statement_of_Purpose.pdf', status: 'uploaded' as const },
-          { name: 'English_Test_Report.pdf', status: 'pending' as const },
-        ].map((doc, idx) => (
-          <div key={idx} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
-            doc.status === 'uploaded'
-              ? 'border-emerald-200 bg-emerald-50/30'
-              : 'border-[#E2E8F0] bg-white hover:border-gray-200'
-          }`}>
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-              doc.status === 'uploaded' ? 'bg-emerald-100' : 'bg-gray-100'
-            }`}>
-              <FileText className={`w-4 h-4 ${
-                doc.status === 'uploaded' ? 'text-emerald-600' : 'text-gray-400'
-              }`} />
+      {/* Uploaded documents list with dedicated VIEW option */}
+      <div className="space-y-2.5">
+        {docs.map((doc) => (
+          <div
+            key={doc.id}
+            className={`flex items-center justify-between gap-3 p-3.5 rounded-xl border transition-all ${
+              doc.status === 'uploaded'
+                ? 'border-emerald-200 bg-emerald-50/40 hover:bg-emerald-50/60'
+                : 'border-slate-200 bg-white hover:border-slate-300'
+            }`}
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                  doc.status === 'uploaded' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'
+                }`}
+              >
+                <FileText className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-slate-900 truncate">{doc.name}</p>
+                <p className="text-[11px] text-slate-500">
+                  {doc.docType} • {doc.size} {doc.date !== 'Pending' ? `• Uploaded ${doc.date}` : ''}
+                </p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-800 truncate">{doc.name}</p>
-            </div>
-            <div className="shrink-0">
+
+            <div className="flex items-center gap-2 shrink-0">
               {doc.status === 'uploaded' ? (
-                <Badge variant="success" className="text-[10px] px-1.5 py-0 h-5">Uploaded ✔</Badge>
+                <>
+                  <Badge variant="success" className="text-[10px] px-2 py-0.5 h-6">
+                    Uploaded ✔
+                  </Badge>
+                  {/* The View Option */}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => onViewDoc(doc)}
+                    className="h-8 px-2.5 text-xs font-semibold gap-1.5 border-slate-300 hover:border-blue-400 hover:text-blue-700"
+                    title="View and preview uploaded document"
+                  >
+                    <Eye className="w-3.5 h-3.5 text-blue-600" />
+                    View
+                  </Button>
+                </>
               ) : (
-                <Badge variant="warning" className="text-[10px] px-1.5 py-0 h-5">Pending ⏳</Badge>
+                <>
+                  <Badge variant="warning" className="text-[10px] px-2 py-0.5 h-6">
+                    Pending ⏳
+                  </Badge>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={onTriggerUpload}
+                    className="h-8 px-2.5 text-xs font-semibold gap-1 text-slate-600 hover:text-slate-900"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    Upload
+                  </Button>
+                </>
               )}
             </div>
           </div>
@@ -571,9 +676,9 @@ function renderDocumentsForm() {
       {/* Declaration */}
       <div className="rounded-xl bg-gray-50 border border-gray-200 p-4">
         <label className="flex items-start gap-2.5 cursor-pointer">
-          <input type="checkbox" className="mt-0.5 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" />
+          <input type="checkbox" className="mt-0.5 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" defaultChecked />
           <span className="text-xs text-gray-700 leading-relaxed">
-            I confirm that all information provided is accurate and complete. I understand that any false or misleading information may result in visa refusal or cancellation.
+            I confirm that all uploaded documents are true and certified copies of the original records. I understand that fraudulent documents will lead to PRISMS CoE revocation under the ESOS Act.
           </span>
         </label>
       </div>

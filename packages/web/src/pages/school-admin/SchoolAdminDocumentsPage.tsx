@@ -23,6 +23,7 @@ import {
   FileArchive,
 } from 'lucide-react';
 import { useToast } from '../../components/ui/Toast';
+import { DocumentViewerModal, ViewableDocument } from '../../components/documents/DocumentViewerModal';
 
 type ComplianceDoc = {
   id: string;
@@ -133,6 +134,7 @@ export default function SchoolAdminDocumentsPage() {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [inspectedDoc, setInspectedDoc] = useState<ComplianceDoc | null>(null);
   const [auditReportOpen, setAuditReportOpen] = useState(false);
+  const [viewingDoc, setViewingDoc] = useState<ViewableDocument | null>(null);
 
   const [newDocName, setNewDocName] = useState('');
   const [newDocCategory, setNewDocCategory] = useState<ComplianceDoc['category']>('Course Material');
@@ -616,14 +618,33 @@ export default function SchoolAdminDocumentsPage() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => toast(`Downloading ${inspectedDoc.name}...`, 'info')}
-                >
-                  <Download className="w-4 h-4" />
-                  Download PDF
-                </Button>
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    onClick={() =>
+                      setViewingDoc({
+                        id: inspectedDoc.id,
+                        name: inspectedDoc.name,
+                        docType: inspectedDoc.category,
+                        size: inspectedDoc.size,
+                        uploadedAt: inspectedDoc.updatedAt,
+                        status: inspectedDoc.status as any,
+                      })
+                    }
+                    className="text-blue-700 bg-blue-50/80 hover:bg-blue-100 border-blue-200 gap-1.5"
+                  >
+                    <Eye className="w-4 h-4 text-blue-600" />
+                    View Document
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => toast(`Downloading ${inspectedDoc.name}...`, 'info')}
+                  >
+                    <Download className="w-4 h-4" />
+                    Download
+                  </Button>
+                </div>
                 <div className="flex items-center gap-2">
                   {inspectedDoc.status !== 'Verified' ? (
                     <Button onClick={() => handleVerify(inspectedDoc.id)}>
@@ -794,6 +815,14 @@ export default function SchoolAdminDocumentsPage() {
               </form>
             </Card>
           </div>
+        )}
+
+        {/* Uploaded Document Viewer Modal */}
+        {viewingDoc && (
+          <DocumentViewerModal
+            document={viewingDoc}
+            onClose={() => setViewingDoc(null)}
+          />
         )}
       </div>
     </AppLayout>
