@@ -1020,17 +1020,22 @@ export default function HomePage() {
                   </div>
 
                   {/* Active Scholarship Card */}
-                  <div className="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200/80 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-amber-800 flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                        Exclusive 2026 Scholarship
-                      </span>
-                      <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                  <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50/90 via-orange-50/40 to-amber-50/70 border border-amber-200/90 shadow-2xs space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="w-5 h-5 rounded-md bg-amber-500/15 text-amber-700 flex items-center justify-center shrink-0">
+                          <Sparkles className="w-3 h-3" />
+                        </span>
+                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-amber-950 truncate">
+                          2026 Scholarship
+                        </span>
+                      </div>
+                      <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-200 px-2 py-0.5 rounded-full shadow-2xs">
+                        <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
                         Auto-Applied
                       </span>
                     </div>
-                    <p className="text-xs font-bold text-slate-900">
+                    <p className="text-xs sm:text-[13px] font-bold text-slate-900 leading-snug pl-0.5">
                       {prov.scholarship}
                     </p>
                   </div>
