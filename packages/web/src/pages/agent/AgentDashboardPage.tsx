@@ -164,18 +164,21 @@ export default function AgentDashboardPage() {
             <div className="flex flex-wrap items-center gap-3 shrink-0">
               <Link to="/agent/commissions">
                 <Button
-                  variant="secondary"
-                  className="bg-white/15 hover:bg-white/25 text-white border-white/20 gap-1.5 text-xs font-bold shadow-xs"
+                  variant="glass"
+                  className="gap-2 text-xs font-bold"
                 >
-                  <DollarSign className="w-4 h-4 text-emerald-300" />
-                  Commission Ledger (A$24.8k)
+                  <DollarSign className="w-4 h-4 text-emerald-300 shrink-0" />
+                  <span className="text-white">Commission Ledger (A$24.8k)</span>
                 </Button>
               </Link>
               <Link to="/quotes">
-                <Button className="bg-white hover:bg-slate-100 text-blue-900 border-0 gap-1.5 text-xs font-bold shadow-md">
-                  <FileText className="w-4 h-4 text-blue-700" />
-                  New 30s Quote
-                  <ArrowUpRight className="w-3.5 h-3.5 text-blue-700" />
+                <Button
+                  variant="white"
+                  className="gap-2 text-xs font-bold text-slate-900 shadow-md hover:bg-slate-50"
+                >
+                  <FileText className="w-4 h-4 text-blue-600 shrink-0" />
+                  <span className="text-slate-900 font-extrabold tracking-tight">New 30s Quote</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                 </Button>
               </Link>
             </div>

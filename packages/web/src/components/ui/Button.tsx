@@ -8,7 +8,9 @@ type ButtonVariant =
   | 'outline'
   | 'dashed'
   | 'destructive'
-  | 'success';
+  | 'success'
+  | 'white'
+  | 'glass';
 type ButtonSize = 'default' | 'sm' | 'lg';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -29,6 +31,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         'border border-dashed border-slate-300 bg-white hover:bg-slate-50 text-slate-700 hover:border-blue-400',
       destructive: 'bg-rose-600 text-white hover:bg-rose-700 shadow-xs shadow-rose-600/15',
       success: 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs shadow-emerald-600/15',
+      white: 'bg-white hover:bg-slate-100 text-slate-900 border-0 shadow-md font-bold',
+      glass: 'bg-white/15 hover:bg-white/25 text-white border border-white/25 backdrop-blur-md shadow-xs',
     };
 
     const sizes: Record<ButtonSize, string> = {
