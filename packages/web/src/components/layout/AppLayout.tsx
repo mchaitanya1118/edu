@@ -1,4 +1,4 @@
-import React, { useState, useContext, createContext } from 'react';
+import React, { useState, useContext, createContext, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -15,6 +15,7 @@ import {
   FileCheck,
   ChevronRight,
   ChevronDown,
+  ChevronLeft,
   Plus,
   Command,
   Menu,
@@ -85,6 +86,34 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
   const [selectedIntake, setSelectedIntake] = useState('Q3 • Jul 2026');
   const [unreadCount, setUnreadCount] = useState(3);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('aus_edu_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleSidebarCollapsed = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('aus_edu_sidebar_collapsed', String(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        toggleSidebarCollapsed();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   if (isAlreadyInsideLayout) {
     return <>{children ?? <Outlet />}</>;
@@ -190,71 +219,142 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
 
         {/* Left Sidebar */}
         <aside
-          className={`w-72 bg-white border-r border-slate-200/90 flex flex-col fixed h-full z-50 transition-transform duration-200 lg:translate-x-0 ${
-            mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+          className={`bg-white border-r border-slate-200/90 flex flex-col fixed h-full z-50 transition-[width,transform] duration-200 ease-in-out ${
+            mobileMenuOpen ? 'translate-x-0 w-72' : '-translate-x-full lg:translate-x-0'
+          } ${sidebarCollapsed ? 'lg:w-20' : 'lg:w-72'}`}
         >
           {/* Brand Header */}
-          <div className="h-16 px-5 flex items-center justify-between border-b border-slate-100">
-            <Link to="/" className="flex items-center gap-3 group">
+          <div
+            className={`h-16 flex items-center border-b border-slate-100 ${
+              sidebarCollapsed ? 'px-3 justify-center relative' : 'px-5 justify-between'
+            }`}
+          >
+            <Link to="/" className="flex items-center gap-3 group" title="AusEdu Connect">
               <div
-                className={`w-9 h-9 rounded-xl bg-gradient-to-br ${roleMeta.accentGrad} flex items-center justify-center text-white font-bold text-base shadow-xs`}
+                className={`w-9 h-9 rounded-xl bg-gradient-to-br ${roleMeta.accentGrad} flex items-center justify-center text-white font-bold text-base shadow-xs shrink-0 group-hover:scale-105 transition-transform`}
               >
                 E
               </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-base font-bold tracking-tight text-slate-900">
-                    AusEdu Connect
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
-                    AU
-                  </span>
+              {!sidebarCollapsed && (
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-base font-bold tracking-tight text-slate-900 truncate">
+                      AusEdu Connect
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 shrink-0">
+                      AU
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 font-medium leading-none mt-0.5 truncate">
+                    CRICOS &amp; RTO Operating System
+                  </p>
                 </div>
-                <p className="text-[11px] text-slate-500 font-medium leading-none mt-0.5">
-                  CRICOS &amp; RTO Operating System
-                </p>
-              </div>
+              )}
             </Link>
+
+            {/* Mobile Close Button */}
             <button
               onClick={() => setMobileMenuOpen(false)}
-              className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
+
+            {/* Desktop Collapse Toggle in Sidebar Header */}
+            {!sidebarCollapsed ? (
+              <button
+                type="button"
+                onClick={toggleSidebarCollapsed}
+                title="Collapse sidebar (⌘B)"
+                className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                aria-label="Collapse sidebar"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={toggleSidebarCollapsed}
+                title="Expand sidebar (⌘B)"
+                className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white border border-slate-200 shadow-xs items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-all z-20 cursor-pointer"
+                aria-label="Expand sidebar"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           {/* Active Workspace Context Card */}
-          <div className="px-4 pt-4 pb-2">
-            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-              <div className="flex items-center justify-between mb-1.5">
-                <span
-                  className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold border ${roleMeta.badgeBg}`}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full ${roleMeta.dot}`} />
-                  {roleMeta.label}
-                </span>
-                <Globe className="w-3.5 h-3.5 text-slate-400" />
+          <div className={sidebarCollapsed ? 'px-2 pt-3 pb-2 flex justify-center' : 'px-4 pt-4 pb-2'}>
+            {sidebarCollapsed ? (
+              <div
+                title={`${user?.organization || 'Australian Pacific College'} • ${roleMeta.label}`}
+                className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-center relative cursor-default"
+              >
+                <Globe className="w-4 h-4 text-slate-600" />
+                <span className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${roleMeta.dot}`} />
               </div>
-              <p className="text-xs font-bold text-slate-900 truncate">
-                {user?.organization || 'Australian Pacific College'}
-              </p>
-              <p className="text-[11px] text-slate-500 truncate mt-0.5">{roleMeta.sub}</p>
-            </div>
+            ) : (
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold border ${roleMeta.badgeBg}`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${roleMeta.dot}`} />
+                    {roleMeta.label}
+                  </span>
+                  <Globe className="w-3.5 h-3.5 text-slate-400" />
+                </div>
+                <p className="text-xs font-bold text-slate-900 truncate">
+                  {user?.organization || 'Australian Pacific College'}
+                </p>
+                <p className="text-[11px] text-slate-500 truncate mt-0.5">{roleMeta.sub}</p>
+              </div>
+            )}
           </div>
 
           {/* Navigation Links */}
-          <nav className="flex-1 px-3 py-3 space-y-5 overflow-y-auto">
-            {Object.entries(groupedNav).map(([section, items]) => (
+          <nav className={`flex-1 overflow-y-auto ${sidebarCollapsed ? 'px-2 py-2 space-y-3' : 'px-3 py-3 space-y-5'}`}>
+            {Object.entries(groupedNav).map(([section, items], sectionIndex) => (
               <div key={section}>
-                <div className="px-3 mb-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  {section}
-                </div>
-                <div className="space-y-1">
+                {sidebarCollapsed ? (
+                  sectionIndex > 0 && <div className="h-px bg-slate-200/80 my-2 mx-1" />
+                ) : (
+                  <div className="px-3 mb-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    {section}
+                  </div>
+                )}
+                <div className={sidebarCollapsed ? 'space-y-1.5' : 'space-y-1'}>
                   {items.map((item) => {
                     const isActive =
                       location.pathname === item.href ||
                       (item.href !== '/' && location.pathname.startsWith(item.href + '/'));
+
+                    if (sidebarCollapsed) {
+                      return (
+                        <Link
+                          key={item.href}
+                          to={item.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                          title={`${item.label}${item.badge ? ` (${item.badge})` : ''}`}
+                          className={`flex items-center justify-center w-11 h-11 mx-auto rounded-xl text-sm font-medium transition-all group relative cursor-pointer ${
+                            isActive
+                              ? 'bg-blue-600 text-white shadow-xs'
+                              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+                          }`}
+                        >
+                          <item.icon
+                            className={`w-5 h-5 shrink-0 transition-colors ${
+                              isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-700'
+                            }`}
+                          />
+                          {item.badge && (
+                            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white" />
+                          )}
+                        </Link>
+                      );
+                    }
+
                     return (
                       <Link
                         key={item.href}
@@ -296,96 +396,171 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
           </nav>
 
           {/* Instant Demo Role Switcher */}
-          <div className="p-3 mx-3 mb-2 rounded-xl bg-slate-50 border border-slate-200/80">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Switch Portal View
-              </span>
-              <span className="text-[10px] font-semibold text-blue-600">Interactive Demo</span>
-            </div>
-            <div className="grid grid-cols-3 gap-1 bg-slate-200/70 p-1 rounded-lg">
+          {sidebarCollapsed ? (
+            <div className="p-1.5 mx-2 mb-2 flex flex-col items-center gap-1 bg-slate-100 rounded-xl">
               <button
                 type="button"
+                title="Switch to Agent Portal"
                 onClick={() => {
                   switchRole('agent');
                   navigate('/agent/dashboard');
                 }}
-                className={`py-1.5 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
+                className={`w-9 h-7 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
                   currentRole === 'agent'
                     ? 'bg-white text-blue-700 shadow-2xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
-                Agent
+                Ag
               </button>
               <button
                 type="button"
+                title="Switch to School Admin Portal"
                 onClick={() => {
                   switchRole('school_admin');
                   navigate('/school-admin/dashboard');
                 }}
-                className={`py-1.5 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
+                className={`w-9 h-7 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
                   currentRole === 'school_admin'
                     ? 'bg-white text-emerald-700 shadow-2xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
-                School
+                Sc
               </button>
               <button
                 type="button"
+                title="Switch to Platform Governance"
                 onClick={() => {
                   switchRole('super_admin');
                   navigate('/admin');
                 }}
-                className={`py-1.5 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
+                className={`w-9 h-7 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
                   currentRole === 'super_admin'
                     ? 'bg-white text-indigo-700 shadow-2xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
-                Admin
+                Ad
               </button>
             </div>
-          </div>
+          ) : (
+            <div className="p-3 mx-3 mb-2 rounded-xl bg-slate-50 border border-slate-200/80">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Switch Portal View
+                </span>
+                <span className="text-[10px] font-semibold text-blue-600">Interactive Demo</span>
+              </div>
+              <div className="grid grid-cols-3 gap-1 bg-slate-200/70 p-1 rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => {
+                    switchRole('agent');
+                    navigate('/agent/dashboard');
+                  }}
+                  className={`py-1.5 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
+                    currentRole === 'agent'
+                      ? 'bg-white text-blue-700 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Agent
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    switchRole('school_admin');
+                    navigate('/school-admin/dashboard');
+                  }}
+                  className={`py-1.5 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
+                    currentRole === 'school_admin'
+                      ? 'bg-white text-emerald-700 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  School
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    switchRole('super_admin');
+                    navigate('/admin');
+                  }}
+                  className={`py-1.5 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
+                    currentRole === 'super_admin'
+                      ? 'bg-white text-indigo-700 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Admin
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* User Footer */}
-          <div className="p-3 border-t border-slate-200/80 bg-white">
-            <div className="flex items-center justify-between gap-2 px-2 py-1.5">
-              <div className="flex items-center gap-2.5 min-w-0">
+          <div className={`border-t border-slate-200/80 bg-white ${sidebarCollapsed ? 'p-2' : 'p-3'}`}>
+            {sidebarCollapsed ? (
+              <div className="flex flex-col items-center gap-2">
                 <div
-                  className={`w-9 h-9 rounded-full bg-gradient-to-tr ${roleMeta.accentGrad} flex items-center justify-center text-xs font-bold text-white shrink-0`}
+                  title={`${user?.name || 'Dr. Yuki Tanaka'} (${user?.email || 'school@ause.edu'})`}
+                  className={`w-9 h-9 rounded-full bg-gradient-to-tr ${roleMeta.accentGrad} flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-2xs cursor-default`}
                 >
                   {user?.avatar || 'YT'}
                 </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-slate-900 truncate">
-                    {user?.name || 'Dr. Yuki Tanaka'}
-                  </p>
-                  <p className="text-[11px] text-slate-500 truncate">
-                    {user?.email || 'school@ause.edu'}
-                  </p>
-                </div>
+                <button
+                  onClick={() => {
+                    logout();
+                    navigate('/login');
+                  }}
+                  title="Sign Out"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
               </div>
-              <button
-                onClick={() => {
-                  logout();
-                  navigate('/login');
-                }}
-                title="Sign Out"
-                className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
+            ) : (
+              <div className="flex items-center justify-between gap-2 px-2 py-1.5">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div
+                    className={`w-9 h-9 rounded-full bg-gradient-to-tr ${roleMeta.accentGrad} flex items-center justify-center text-xs font-bold text-white shrink-0`}
+                  >
+                    {user?.avatar || 'YT'}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-900 truncate">
+                      {user?.name || 'Dr. Yuki Tanaka'}
+                    </p>
+                    <p className="text-[11px] text-slate-500 truncate">
+                      {user?.email || 'school@ause.edu'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    logout();
+                    navigate('/login');
+                  }}
+                  title="Sign Out"
+                  className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         </aside>
 
         {/* Main Content Area */}
-        <div className="flex-1 lg:ml-72 flex flex-col min-w-0">
+        <div
+          className={`flex-1 flex flex-col min-w-0 transition-[margin] duration-200 ease-in-out ${
+            sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-72'
+          }`}
+        >
           {/* Feature-Rich Top Command Navbar */}
           <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-3 sticky top-0 z-30">
-            {/* Left: Mobile Trigger + Contextual Breadcrumb + Active Intake Selector */}
+            {/* Left: Mobile Trigger + Desktop Collapse Toggle + Contextual Breadcrumb + Active Intake Selector */}
             <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
               <button
                 onClick={() => setMobileMenuOpen(true)}
@@ -393,6 +568,16 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
                 aria-label="Open menu"
               >
                 <Menu className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={toggleSidebarCollapsed}
+                title={sidebarCollapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
+                className="hidden lg:flex p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 shrink-0 cursor-pointer transition-colors"
+                aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              >
+                {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
               </button>
 
               <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
