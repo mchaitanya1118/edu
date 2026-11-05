@@ -570,16 +570,6 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
                 <Menu className="w-4 h-4" />
               </button>
 
-              <button
-                type="button"
-                onClick={toggleSidebarCollapsed}
-                title={sidebarCollapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
-                className="hidden lg:flex p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 shrink-0 cursor-pointer transition-colors"
-                aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              >
-                {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-              </button>
-
               <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                 <span
                   className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border shrink-0 ${roleMeta.badgeBg}`}
