@@ -48,6 +48,7 @@ const QUICK_SEARCH_ROUTES = [
   { label: 'ASQA & CRICOS Compliance Vault', href: '/school-admin/documents', tag: 'Compliance' },
   { label: 'Platform Governance & RBAC Matrix', href: '/admin', tag: 'Admin' },
   { label: 'Partner CRICOS Institutions Directory', href: '/portal', tag: 'Directory' },
+  { label: 'Australian Education Groups (Parent Corporate Entities)', href: '/portal?view=groups', tag: 'Groups' },
   { label: 'CRICOS Courses & Scholarship Pricing', href: '/courses', tag: 'Catalog' },
   { label: 'Provider Promotions & Scholarships', href: '/provider-promo', tag: 'Promos' },
   { label: 'Student Tuition Quotes & Offers', href: '/quotes', tag: 'Finance' },

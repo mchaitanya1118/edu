@@ -244,6 +244,9 @@ export default function SchoolAdminDashboardPage() {
   const [campusList, setCampusList] = useState(INITIAL_CAMPUS_CAPACITY);
   const [capModalOpen, setCapModalOpen] = useState(false);
 
+  // Education Group Corporate Scope Switcher
+  const [groupScope, setGroupScope] = useState<'consolidated' | 'college-apc' | 'college-eu'>('consolidated');
+
   const handleIssueCoE = (id: string, student: string) => {
     const generatedCoE = `COE-26-${Math.floor(100000 + Math.random() * 899999)}`;
     setApplications((prev) =>
@@ -293,21 +296,100 @@ export default function SchoolAdminDashboardPage() {
 
   return (
     <AppLayout>
-      <div className="space-y-8">
+      <div className="space-y-6">
+        {/* Education Group Parent Corporate Scope Switcher */}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-blue-700 text-white font-extrabold flex items-center justify-center text-sm shadow-sm shrink-0">
+                APC
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    Parent Education Group:
+                  </span>
+                  <span className="font-extrabold text-slate-900 text-sm">
+                    APC Education Group Limited
+                  </span>
+                  <Badge variant="default" className="text-[10px]">
+                    ABN 74 069 985 876
+                  </Badge>
+                  <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                    Tier 1 Low-Risk Enterprise
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Parent holding entity managing 3 CRICOS providers: Australian Pacific College (CRICOS 03812M), English Unlimited (CRICOS 02446A), and Design &amp; Tech Hub.
+                </p>
+              </div>
+            </div>
+
+            {/* Scope Toggle */}
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0 self-start lg:self-auto overflow-x-auto">
+              <button
+                type="button"
+                onClick={() => setGroupScope('consolidated')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  groupScope === 'consolidated'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Consolidated Group View (3 Providers)
+              </button>
+              <button
+                type="button"
+                onClick={() => setGroupScope('college-apc')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  groupScope === 'college-apc'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                APC (CRICOS 03812M)
+              </button>
+              <button
+                type="button"
+                onClick={() => setGroupScope('college-eu')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  groupScope === 'college-eu'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                English Unlimited (CRICOS 02446A)
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Executive Provider Hero Banner */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 p-6 sm:p-8 text-white shadow-sm border border-slate-800">
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div className="space-y-2 max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-semibold">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                CRICOS Provider #03812M • ASQA Compliant (98.4%)
+                {groupScope === 'consolidated'
+                  ? 'Consolidated Education Group Scope • 3 CRICOS Registrations • ASQA & National Code Compliant'
+                  : groupScope === 'college-apc'
+                  ? 'CRICOS Provider #03812M • Australian Pacific College • ASQA Compliant (98.4%)'
+                  : 'CRICOS Provider #02446A • English Unlimited • NEAS Quality Endorsed'}
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-                Australian Pacific College — Provider Command Center
+                {groupScope === 'consolidated'
+                  ? 'APC Education Group — Corporate Command Center'
+                  : groupScope === 'college-apc'
+                  ? 'Australian Pacific College — Provider Command Center'
+                  : 'English Unlimited — ELICOS Institute Command Center'}
               </h1>
               <p className="text-sm text-slate-300 leading-relaxed">
-                Manage multi-campus CRICOS capacity, approve PRISMS Confirmation of Enrolments (CoEs),
-                and broadcast real-time scholarship campaigns to 42+ partner agencies worldwide.
+                {groupScope === 'consolidated'
+                  ? 'Manage consolidated group-wide CRICOS capacity across 3 subsidiary institutions, execute unified Master Agency Agreements, and approve PRISMS CoEs with cross-college articulated pathways.'
+                  : groupScope === 'college-apc'
+                  ? 'Manage multi-campus CRICOS capacity for vocational business, design, and IT diplomas, approve PRISMS Confirmation of Enrolments (CoEs), and broadcast scholarship promos.'
+                  : 'Manage intensive General English, Cambridge, and IELTS exam preparation campuses across Sydney, Melbourne, and Brisbane with instant offer turnaround.'}
               </p>
             </div>
 
@@ -322,6 +404,15 @@ export default function SchoolAdminDashboardPage() {
                 <Download className="w-4 h-4" />
                 Export PRISMS CSV
               </Button>
+              <Link to="/portal?view=groups">
+                <Button
+                  variant="secondary"
+                  className="bg-white/10 hover:bg-white/20 text-white border-white/20"
+                >
+                  <Building2 className="w-4 h-4" />
+                  Group Directory
+                </Button>
+              </Link>
               <Link to="/school-admin/documents">
                 <Button
                   variant="secondary"

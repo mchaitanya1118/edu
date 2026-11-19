@@ -30,6 +30,7 @@ enum TenantPlan {
 enum UserRole {
   SUPER_ADMIN
   PLATFORM_ADMIN
+  EDUCATION_GROUP_ADMIN
   SCHOOL_ADMIN
   SCHOOL_STAFF
   AGENCY_OWNER
@@ -253,6 +254,7 @@ model Tenant {
   contracts     SchoolAgencyRelationship[] @relation("schoolContract")
   users         User[] @relation("tenantUsers")
   students      Student[] @relation("tenantStudents")
+  educationGroups EducationGroup[] @relation("tenantEducationGroups")
   subscription_id String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -348,8 +350,46 @@ model SchoolProfile {
   documents                 Document[] @relation("schoolDocuments")
   savedCourses              AgencySavedCourse[] @relation("savedCourseSchool")
   contracts                 SchoolAgencyRelationship[] @relation("schoolContract")
+  educationGroup            EducationGroup? @relation("groupSchools", fields: [educationGroupId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  educationGroupId          String?
+  isGroupHeadquarters       Boolean       @default(false)
   createdAt                 DateTime @default(now())
   updatedAt                 DateTime @updatedAt
+
+  @@index([educationGroupId])
+}
+
+// -------------------------------------------//
+// Education Groups (Parent Holding Companies)
+// Multi-College ownership under Australian ESOS/ASQA
+// -------------------------------------------//
+model EducationGroup {
+  id                    String          @id @default(cuid())
+  tenant                Tenant          @relation("tenantEducationGroups", fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tenantId              String
+  code                  String?         @unique // e.g. "NEXTED", "NAVITAS", "APC_GROUP", "ILSC_GROUP"
+  name                  String          // e.g. "NextEd Group Limited"
+  tradingName           String?         // e.g. "NextEd Group"
+  abn                   String?         // Australian Business Number
+  acn                   String?         // Australian Company Number
+  asxCode               String?         // e.g. "NXD" if publicly listed on ASX
+  website               String?
+  headOfficeAddress     String?
+  headOfficeCity        String?
+  headOfficeState       String?         // NSW, VIC, QLD, WA, SA
+  headOfficePostcode    String?
+  contactEmail          String?
+  contactPhone          String?
+  groupCeo              String?
+  headOfAdmissions      String?
+  masterAgreementTerms  String?
+  description           String?
+  isVerified            Boolean         @default(true)
+  schools               SchoolProfile[] @relation("groupSchools")
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  @@index([tenantId])
 }
 
 model AgencyProfile {

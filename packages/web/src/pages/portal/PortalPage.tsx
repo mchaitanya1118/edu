@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -31,6 +31,14 @@ import {
   ExternalLink,
   ChevronRight,
   HelpCircle,
+  Building,
+  Briefcase,
+  Layers,
+  Globe,
+  Phone,
+  Mail,
+  ArrowRight,
+  FileText,
 } from 'lucide-react';
 import { useToast } from '../../components/ui/Toast';
 
@@ -62,6 +70,9 @@ export type PartnerSchool = {
   regionalVisaPoints: boolean;
   contactEmail: string;
   featured?: boolean;
+  educationGroupId?: string;
+  educationGroupName?: string;
+  educationGroupAsx?: string;
 };
 
 export const PARTNER_SCHOOLS: PartnerSchool[] = [
@@ -99,6 +110,8 @@ export const PARTNER_SCHOOLS: PartnerSchool[] = [
     regionalVisaPoints: true,
     contactEmail: 'admissions@apc.edu.au',
     featured: true,
+    educationGroupId: 'apc-group',
+    educationGroupName: 'APC Education Group',
   },
   {
     id: 'greenwich',
@@ -133,6 +146,9 @@ export const PARTNER_SCHOOLS: PartnerSchool[] = [
     regionalVisaPoints: true,
     contactEmail: 'agents@greenwichcollege.edu.au',
     featured: true,
+    educationGroupId: 'nexted-group',
+    educationGroupName: 'NextEd Group Limited',
+    educationGroupAsx: 'ASX: NXD',
   },
   {
     id: 'ilsc',
@@ -167,6 +183,8 @@ export const PARTNER_SCHOOLS: PartnerSchool[] = [
     regionalVisaPoints: true,
     contactEmail: 'admissions-australia@ilsceducation.com',
     featured: false,
+    educationGroupId: 'ilsc-group',
+    educationGroupName: 'ILSC Education Group',
   },
   {
     id: 'lexis',
@@ -202,6 +220,8 @@ export const PARTNER_SCHOOLS: PartnerSchool[] = [
     regionalVisaPoints: true,
     contactEmail: 'registrations@lexisenglish.com',
     featured: true,
+    educationGroupId: 'lexis-group',
+    educationGroupName: 'Lexis Education Group',
   },
   {
     id: 'kbs',
@@ -237,6 +257,8 @@ export const PARTNER_SCHOOLS: PartnerSchool[] = [
     regionalVisaPoints: true,
     contactEmail: 'admissions@kbs.edu.au',
     featured: false,
+    educationGroupId: 'kaplan-group',
+    educationGroupName: 'Kaplan Australia & New Zealand',
   },
   {
     id: 'torrens',
@@ -271,6 +293,8 @@ export const PARTNER_SCHOOLS: PartnerSchool[] = [
     regionalVisaPoints: true,
     contactEmail: 'international.admissions@torrens.edu.au',
     featured: false,
+    educationGroupId: 'torrens-group',
+    educationGroupName: 'Strategic Education / Torrens Network',
   },
   {
     id: 'tafensw',
@@ -305,6 +329,8 @@ export const PARTNER_SCHOOLS: PartnerSchool[] = [
     regionalVisaPoints: true,
     contactEmail: 'tafensw.international@tafensw.edu.au',
     featured: false,
+    educationGroupId: 'tafe-group',
+    educationGroupName: 'TAFE NSW Network',
   },
   {
     id: 'anc',
@@ -337,12 +363,873 @@ export const PARTNER_SCHOOLS: PartnerSchool[] = [
     regionalVisaPoints: false,
     contactEmail: 'info@anc.vic.edu.au',
     featured: false,
+    educationGroupId: 'neh-group',
+    educationGroupName: 'National Education Holdings (NEH)',
+  },
+];
+
+export type ConstituentCollege = {
+  id: string;
+  name: string;
+  shortCode: string;
+  cricos: string;
+  rto: string;
+  providerType: string;
+  states: string[];
+  campusesCount: number;
+  highlightCourse: string;
+  minWeeklyTuition: number;
+  commissionRate: number;
+};
+
+export type ArticulatedPathway = {
+  id: string;
+  title: string;
+  leadCollege: string;
+  destinationCollege: string;
+  qualification: string;
+  durationWeeks: number;
+  packagedCoEEligible: boolean;
+  creditExemption: string;
+  description: string;
+};
+
+export type EducationGroupItem = {
+  id: string;
+  code: string;
+  name: string;
+  tradingName: string;
+  abn: string;
+  acn?: string;
+  asxCode?: string;
+  logoBg: string;
+  headOffice: string;
+  headOfficeCity: string;
+  headOfficeState: string;
+  website: string;
+  groupCeo: string;
+  headOfAdmissions: string;
+  contactEmail: string;
+  contactPhone: string;
+  overview: string;
+  collegeCount: number;
+  totalCampuses: number;
+  totalCourses: number;
+  states: string[];
+  masterCommissionTerms: {
+    singleContractCoverage: boolean;
+    baseRate: number;
+    tier1Rate: number;
+    platinumRate: number;
+    summary: string;
+    crossSellingBonus: string;
+    paymentCycle: string;
+  };
+  constituentColleges: ConstituentCollege[];
+  pathways: ArticulatedPathway[];
+  governance: {
+    asqaRiskTier: 'Low Risk (Tier 1)' | 'Medium Risk (Tier 2)';
+    teqsaAccredited: boolean;
+    esosPrismsIntegrated: boolean;
+    ombudsmanComplianceScore: number;
+    yearEstablished: number;
+    regulatoryScope: string;
+  };
+  highlights: string[];
+};
+
+export const EDUCATION_GROUPS: EducationGroupItem[] = [
+  {
+    id: 'nexted-group',
+    code: 'NEXTED',
+    name: 'NextEd Group Limited',
+    tradingName: 'NextEd Group',
+    abn: '43 105 012 066',
+    acn: '105 012 066',
+    asxCode: 'ASX: NXD',
+    logoBg: 'bg-emerald-700',
+    headOffice: 'Level 2, 432-434 Kent Street',
+    headOfficeCity: 'Sydney',
+    headOfficeState: 'NSW',
+    website: 'https://nexted.com.au',
+    groupCeo: 'Glenn Elith',
+    headOfAdmissions: 'Sarah Jenkins',
+    contactEmail: 'admissions@nexted.com.au',
+    contactPhone: '+61 2 8355 3800',
+    overview:
+      'NextEd Group Limited (ASX: NXD) is one of Australia’s largest ASX-listed education providers, delivering ELICOS English, VET Diplomas, IT, and Healthcare qualifications across nationwide metro and regional campuses.',
+    collegeCount: 4,
+    totalCampuses: 9,
+    totalCourses: 54,
+    states: ['NSW', 'VIC', 'QLD', 'WA', 'SA'],
+    masterCommissionTerms: {
+      singleContractCoverage: true,
+      baseRate: 20,
+      tier1Rate: 24,
+      platinumRate: 26,
+      summary: '1 Unified Master Agency Agreement covers Greenwich English, Management, and Celtic Training.',
+      crossSellingBonus: '+2% bonus commission when bundling ELICOS with VET Management CoEs.',
+      paymentCycle: 'CoE Confirmation + Census Date (Net 14 Days)',
+    },
+    constituentColleges: [
+      {
+        id: 'greenwich',
+        name: 'Greenwich English College',
+        shortCode: 'GRW-ENG',
+        cricos: '02672K',
+        rto: '91153',
+        providerType: 'Private ELICOS Institute',
+        states: ['NSW', 'VIC', 'QLD', 'WA'],
+        campusesCount: 4,
+        highlightCourse: 'Cambridge Preparation & IELTS Intensive',
+        minWeeklyTuition: 290,
+        commissionRate: 24,
+      },
+      {
+        id: 'greenwich-mgmt',
+        name: 'Greenwich Management College',
+        shortCode: 'GRW-VET',
+        cricos: '02672K',
+        rto: '91153',
+        providerType: 'Private VET Provider',
+        states: ['NSW', 'VIC', 'QLD', 'WA'],
+        campusesCount: 4,
+        highlightCourse: 'Advanced Diploma of Program Management',
+        minWeeklyTuition: 310,
+        commissionRate: 22,
+      },
+      {
+        id: 'celtic-training',
+        name: 'Celtic Training & Nursing',
+        shortCode: 'CELTIC',
+        cricos: '03991J',
+        rto: '41108',
+        providerType: 'Accredited Healthcare RTO',
+        states: ['SA', 'NSW'],
+        campusesCount: 2,
+        highlightCourse: 'Diploma of Nursing (HLT54121)',
+        minWeeklyTuition: 360,
+        commissionRate: 20,
+      },
+      {
+        id: 'gostudy',
+        name: 'Go Study Australia (International Network)',
+        shortCode: 'GO-STUDY',
+        cricos: 'N/A (Agency Advisory)',
+        rto: 'N/A',
+        providerType: 'Corporate Advisory & Placement Desk',
+        states: ['NSW', 'VIC', 'QLD', 'WA', 'SA'],
+        campusesCount: 5,
+        highlightCourse: 'Direct Onshore Support & Visa Guidance',
+        minWeeklyTuition: 0,
+        commissionRate: 0,
+      },
+    ],
+    pathways: [
+      {
+        id: 'pwy-nxt-1',
+        title: 'ELICOS to VET Management Fast-Track',
+        leadCollege: 'Greenwich English College',
+        destinationCollege: 'Greenwich Management College',
+        qualification: 'Diploma of Leadership & Management',
+        durationWeeks: 52,
+        packagedCoEEligible: true,
+        creditExemption: 'Direct entry without official IELTS exam upon Level 4 completion',
+        description:
+          'Single packaged student visa (Subclass 500) application with combined CoE issuance and single upfront deposit.',
+      },
+      {
+        id: 'pwy-nxt-2',
+        title: 'Greenwich Advanced Diploma to University Degree Articulation',
+        leadCollege: 'Greenwich Management College',
+        destinationCollege: 'Torrens University & CQU',
+        qualification: 'Bachelor of Business / Bachelor of Commerce',
+        durationWeeks: 104,
+        packagedCoEEligible: true,
+        creditExemption: '8 courses (1 full academic year) advanced standing credit transfer',
+        description:
+          'Graduates transition directly into 2nd year of accredited Australian University Bachelor programs.',
+      },
+    ],
+    governance: {
+      asqaRiskTier: 'Low Risk (Tier 1)',
+      teqsaAccredited: true,
+      esosPrismsIntegrated: true,
+      ombudsmanComplianceScore: 99.4,
+      yearEstablished: 2003,
+      regulatoryScope: 'ASQA RTO 91153 • CRICOS 02672K • ASX Listed (NXD)',
+    },
+    highlights: [
+      'Single Master Agency Agreement for all 4 member organizations',
+      'Unified Admissions Desk with 24-hour turnaround on packaged CoEs',
+      'Cross-campus transfer flexibility between Sydney, Melbourne, Brisbane & Perth',
+    ],
+  },
+  {
+    id: 'apc-group',
+    code: 'APC_GROUP',
+    name: 'APC Education Group',
+    tradingName: 'APC Group Australia',
+    abn: '74 069 985 876',
+    acn: '069 985 876',
+    logoBg: 'bg-blue-700',
+    headOffice: 'Level 4, 189 Kent Street',
+    headOfficeCity: 'Sydney',
+    headOfficeState: 'NSW',
+    website: 'https://apc.edu.au',
+    groupCeo: 'David O’Connor',
+    headOfAdmissions: 'Marcus Vance',
+    contactEmail: 'groups@apc.edu.au',
+    contactPhone: '+61 2 9251 7000',
+    overview:
+      'APC Education Group operates Australian Pacific College and English Unlimited, offering seamless articulated vocational, design, tech, and English pathways across NSW, Victoria, and Queensland.',
+    collegeCount: 3,
+    totalCampuses: 6,
+    totalCourses: 38,
+    states: ['NSW', 'VIC', 'QLD'],
+    masterCommissionTerms: {
+      singleContractCoverage: true,
+      baseRate: 22,
+      tier1Rate: 25,
+      platinumRate: 28,
+      summary: 'Master Representation Agreement encompasses APC (VET & Design) and English Unlimited (ELICOS).',
+      crossSellingBonus: '+3% commission override on 2-year packaged enrolments.',
+      paymentCycle: '50% upon CoE issuance, 50% on course census date',
+    },
+    constituentColleges: [
+      {
+        id: 'apc',
+        name: 'Australian Pacific College (APC)',
+        shortCode: 'APC',
+        cricos: '03812M',
+        rto: '45123',
+        providerType: 'Dual Sector Institute',
+        states: ['NSW', 'VIC', 'QLD'],
+        campusesCount: 5,
+        highlightCourse: 'Diploma of IT & Cybersecurity',
+        minWeeklyTuition: 280,
+        commissionRate: 22,
+      },
+      {
+        id: 'english-unlimited',
+        name: 'English Unlimited (EU)',
+        shortCode: 'EU',
+        cricos: '02446A',
+        rto: '90813',
+        providerType: 'ELICOS College',
+        states: ['NSW', 'VIC', 'QLD'],
+        campusesCount: 4,
+        highlightCourse: 'General English & Everyday Communication',
+        minWeeklyTuition: 270,
+        commissionRate: 25,
+      },
+      {
+        id: 'dth-australia',
+        name: 'Design & Tech Hub (DTH)',
+        shortCode: 'DTH',
+        cricos: '03812M',
+        rto: '45123',
+        providerType: 'Creative Tech Academy',
+        states: ['NSW', 'VIC'],
+        campusesCount: 2,
+        highlightCourse: 'Diploma of Graphic & UX Design',
+        minWeeklyTuition: 300,
+        commissionRate: 23,
+      },
+    ],
+    pathways: [
+      {
+        id: 'pwy-apc-1',
+        title: 'EU Intensive English to APC Diploma of IT',
+        leadCollege: 'English Unlimited (EU)',
+        destinationCollege: 'Australian Pacific College (APC)',
+        qualification: 'Diploma of Information Technology',
+        durationWeeks: 48,
+        packagedCoEEligible: true,
+        creditExemption: 'Free English placement testing replaces formal IELTS exam',
+        description: 'Instant same-day combined offer letter and joint PRISMS CoE.',
+      },
+      {
+        id: 'pwy-apc-2',
+        title: 'APC Advanced Diploma to Australian University Bachelor',
+        leadCollege: 'Australian Pacific College (APC)',
+        destinationCollege: 'CQU & Torrens University',
+        qualification: 'Bachelor of Information Technology',
+        durationWeeks: 104,
+        packagedCoEEligible: true,
+        creditExemption: '12 units (1.5 years) credit transfer towards 3-year Bachelor',
+        description: 'Significant cost savings with VET pathway into University degree completion.',
+      },
+    ],
+    governance: {
+      asqaRiskTier: 'Low Risk (Tier 1)',
+      teqsaAccredited: false,
+      esosPrismsIntegrated: true,
+      ombudsmanComplianceScore: 98.7,
+      yearEstablished: 1994,
+      regulatoryScope: 'ASQA RTO #45123 • CRICOS #03812M / #02446A',
+    },
+    highlights: [
+      'Over 30 years continuous operating history in Sydney, Melbourne & Brisbane',
+      'Category 2 Regional campus on the Gold Coast granting +5 Visa Points',
+      'Joint Master Agreement simplifies agent contracts into one legal document',
+    ],
+  },
+  {
+    id: 'ilsc-group',
+    code: 'ILSC_GROUP',
+    name: 'ILSC Education Group',
+    tradingName: 'ILSC & Greystone College Australia',
+    abn: '91 142 841 021',
+    logoBg: 'bg-indigo-700',
+    headOffice: '540 George Street',
+    headOfficeCity: 'Sydney',
+    headOfficeState: 'NSW',
+    website: 'https://ilsc.com',
+    groupCeo: 'Nadine Baladi',
+    headOfAdmissions: 'Liam Chen',
+    contactEmail: 'admissions-australia@ilsceducation.com',
+    contactPhone: '+61 2 9247 1744',
+    overview:
+      'ILSC Education Group unites ILSC Language Schools and Greystone College, recognized globally for experiential language education, vocational training, and work-integrated Co-op programs.',
+    collegeCount: 2,
+    totalCampuses: 4,
+    totalCourses: 32,
+    states: ['NSW', 'VIC', 'QLD', 'SA'],
+    masterCommissionTerms: {
+      singleContractCoverage: true,
+      baseRate: 20,
+      tier1Rate: 23,
+      platinumRate: 25,
+      summary: 'Global Master Agency Agreement across all Australian and international branches.',
+      crossSellingBonus: 'Free student registration on Greystone when progressing from 24+ weeks ILSC.',
+      paymentCycle: 'Census Date + 10 Business Days',
+    },
+    constituentColleges: [
+      {
+        id: 'ilsc-language',
+        name: 'ILSC Language Schools Australia',
+        shortCode: 'ILSC',
+        cricos: '02137M',
+        rto: '31564',
+        providerType: 'Private ELICOS Institute',
+        states: ['NSW', 'VIC', 'QLD', 'SA'],
+        campusesCount: 4,
+        highlightCourse: 'English for Academic Purposes (EAP)',
+        minWeeklyTuition: 300,
+        commissionRate: 20,
+      },
+      {
+        id: 'greystone-college',
+        name: 'Greystone College Australia',
+        shortCode: 'GREYSTONE',
+        cricos: '02137M',
+        rto: '31564',
+        providerType: 'Private VET College',
+        states: ['NSW', 'VIC', 'QLD', 'SA'],
+        campusesCount: 4,
+        highlightCourse: 'Diploma of Business with Co-op Internship',
+        minWeeklyTuition: 290,
+        commissionRate: 22,
+      },
+    ],
+    pathways: [
+      {
+        id: 'pwy-ilsc-1',
+        title: 'EAP to Greystone Co-op Business & Tech',
+        leadCollege: 'ILSC Language Schools Australia',
+        destinationCollege: 'Greystone College Australia',
+        qualification: 'Diploma of International Business',
+        durationWeeks: 64,
+        packagedCoEEligible: true,
+        creditExemption: 'Direct entry from ILSC Intermediate 4 level',
+        description: 'Comprehensive packaged pathway with 24-week paid Australian industry Co-op practicum.',
+      },
+    ],
+    governance: {
+      asqaRiskTier: 'Low Risk (Tier 1)',
+      teqsaAccredited: false,
+      esosPrismsIntegrated: true,
+      ombudsmanComplianceScore: 99.1,
+      yearEstablished: 1991,
+      regulatoryScope: 'ASQA RTO 31564 • CRICOS 02137M • NEAS Quality Endorsed',
+    },
+    highlights: [
+      'Adelaide Regional Campus providing Category 2 regional migration benefits',
+      'Paid Co-op placements in Australian tech, marketing, and hospitality businesses',
+      'Cross-transfer between Australia, Canada, and India campuses',
+    ],
+  },
+  {
+    id: 'kaplan-group',
+    code: 'KAPLAN_GROUP',
+    name: 'Kaplan Australia & New Zealand',
+    tradingName: 'Kaplan Higher Education Group',
+    abn: '86 099 224 448',
+    logoBg: 'bg-purple-700',
+    headOffice: 'Level 8, 400 George Street',
+    headOfficeCity: 'Sydney',
+    headOfficeState: 'NSW',
+    website: 'https://kaplan.edu.au',
+    groupCeo: 'Rob Reagan',
+    headOfAdmissions: 'Clare Hastings',
+    contactEmail: 'admissions@kbs.edu.au',
+    contactPhone: '+61 2 8248 6758',
+    overview:
+      'Kaplan Australia operates premier higher education and language institutions, including Kaplan Business School (TEQSA accredited Australian degrees) and Kaplan International Languages.',
+    collegeCount: 3,
+    totalCampuses: 6,
+    totalCourses: 42,
+    states: ['NSW', 'VIC', 'QLD', 'SA', 'WA'],
+    masterCommissionTerms: {
+      singleContractCoverage: true,
+      baseRate: 18,
+      tier1Rate: 22,
+      platinumRate: 25,
+      summary: 'TEQSA Higher Education Master Contract covering Undergraduate, Postgraduate, and Language branches.',
+      crossSellingBonus: '$1,000 agency incentive on each completed Master degree enrolment.',
+      paymentCycle: 'Trimester Census Date + 14 Days',
+    },
+    constituentColleges: [
+      {
+        id: 'kbs',
+        name: 'Kaplan Business School Australia (KBS)',
+        shortCode: 'KBS',
+        cricos: '02426B',
+        rto: 'PRV12094',
+        providerType: 'University & Higher Ed',
+        states: ['NSW', 'VIC', 'QLD', 'SA', 'WA'],
+        campusesCount: 5,
+        highlightCourse: 'Master of Business Administration (MBA)',
+        minWeeklyTuition: 380,
+        commissionRate: 18,
+      },
+      {
+        id: 'kaplan-languages',
+        name: 'Kaplan International Languages',
+        shortCode: 'KAP-ENG',
+        cricos: '01160E',
+        rto: 'N/A',
+        providerType: 'Higher Ed English Pathway',
+        states: ['NSW', 'VIC', 'QLD', 'WA'],
+        campusesCount: 4,
+        highlightCourse: 'English for Academic Purposes (KITE Pathway)',
+        minWeeklyTuition: 330,
+        commissionRate: 22,
+      },
+      {
+        id: 'murdoch-pathways',
+        name: 'Murdoch University Pathways / Kaplan',
+        shortCode: 'MURDOCH-KAP',
+        cricos: '03127E',
+        rto: 'PRV12094',
+        providerType: 'Higher Ed Foundation College',
+        states: ['WA'],
+        campusesCount: 1,
+        highlightCourse: 'Higher Education Diploma of Business & IT',
+        minWeeklyTuition: 390,
+        commissionRate: 18,
+      },
+    ],
+    pathways: [
+      {
+        id: 'pwy-kap-1',
+        title: 'Kaplan English to KBS Bachelor & Master Direct Entry',
+        leadCollege: 'Kaplan International Languages',
+        destinationCollege: 'Kaplan Business School Australia (KBS)',
+        qualification: 'Bachelor of Business / MBA',
+        durationWeeks: 104,
+        packagedCoEEligible: true,
+        creditExemption: 'Direct entry via KITE placement testing without external English tests',
+        description: 'Subclass 500 Higher Education sector visa with full Post-Study Work Visa rights.',
+      },
+    ],
+    governance: {
+      asqaRiskTier: 'Low Risk (Tier 1)',
+      teqsaAccredited: true,
+      esosPrismsIntegrated: true,
+      ombudsmanComplianceScore: 99.8,
+      yearEstablished: 1938,
+      regulatoryScope: 'TEQSA Higher Education Provider PRV12094 • CRICOS 02426B',
+    },
+    highlights: [
+      'Subclass 485 Post-Study Work Visa rights across Bachelor & Master degree alumni',
+      'Tier 1 Low-Risk national provider status facilitating streamlined visa processing',
+      'Career Central recognized with #1 Graduate Employment Satisfaction in Australia',
+    ],
+  },
+  {
+    id: 'torrens-group',
+    code: 'TORRENS_GROUP',
+    name: 'Strategic Education / Torrens University Network',
+    tradingName: 'Torrens Education Network',
+    abn: '99 154 937 005',
+    logoBg: 'bg-rose-700',
+    headOffice: '46-52 Mountain Street, Ultimo',
+    headOfficeCity: 'Sydney',
+    headOfficeState: 'NSW',
+    website: 'https://torrens.edu.au',
+    groupCeo: 'Linda Brown',
+    headOfAdmissions: 'Fiona Gallacher',
+    contactEmail: 'international.admissions@torrens.edu.au',
+    contactPhone: '+61 1300 575 803',
+    overview:
+      'Strategic Education Inc. operates Torrens University Australia alongside world-renowned institutes: Billy Blue College of Design, Blue Mountains International Hotel Management School (BMIHMS), and Media Design School.',
+    collegeCount: 4,
+    totalCampuses: 8,
+    totalCourses: 72,
+    states: ['NSW', 'VIC', 'QLD', 'SA'],
+    masterCommissionTerms: {
+      singleContractCoverage: true,
+      baseRate: 18,
+      tier1Rate: 20,
+      platinumRate: 22,
+      summary: 'Master University Representation Agreement covering Business, Design, Hospitality & Health faculties.',
+      crossSellingBonus: 'Up to $2,500 bonus per cohort for agencies placing 10+ students annually.',
+      paymentCycle: 'Census Date + 14 Days',
+    },
+    constituentColleges: [
+      {
+        id: 'torrens',
+        name: 'Torrens University Australia',
+        shortCode: 'TUA',
+        cricos: '03389E',
+        rto: 'PRV12209',
+        providerType: 'University & Higher Ed',
+        states: ['NSW', 'VIC', 'QLD', 'SA'],
+        campusesCount: 5,
+        highlightCourse: 'Bachelor of Commerce & Master of Global Project Management',
+        minWeeklyTuition: 420,
+        commissionRate: 18,
+      },
+      {
+        id: 'billy-blue',
+        name: 'Billy Blue College of Design',
+        shortCode: 'BILLY-BLUE',
+        cricos: '03389E',
+        rto: 'PRV12209',
+        providerType: 'Design & Creative Academy',
+        states: ['NSW', 'VIC', 'QLD'],
+        campusesCount: 3,
+        highlightCourse: 'Bachelor of 3D Design & Animation',
+        minWeeklyTuition: 440,
+        commissionRate: 18,
+      },
+      {
+        id: 'bmihms',
+        name: 'Blue Mountains International Hotel Management School',
+        shortCode: 'BMIHMS',
+        cricos: '03389E',
+        rto: 'PRV12209',
+        providerType: 'Hospitality Institute',
+        states: ['NSW'],
+        campusesCount: 2,
+        highlightCourse: 'Bachelor of Business (International Hotel & Resort Management)',
+        minWeeklyTuition: 460,
+        commissionRate: 18,
+      },
+    ],
+    pathways: [
+      {
+        id: 'pwy-tor-1',
+        title: 'Billy Blue Diploma to Torrens University Bachelor Degree',
+        leadCollege: 'Billy Blue College of Design',
+        destinationCollege: 'Torrens University Australia',
+        qualification: 'Bachelor of Design (UX & Web Development)',
+        durationWeeks: 104,
+        packagedCoEEligible: true,
+        creditExemption: '100% full 1-year academic credit transition into 2nd year Bachelor',
+        description: 'Direct progression pathway with studio-based design portfolio assessment.',
+      },
+    ],
+    governance: {
+      asqaRiskTier: 'Low Risk (Tier 1)',
+      teqsaAccredited: true,
+      esosPrismsIntegrated: true,
+      ombudsmanComplianceScore: 99.5,
+      yearEstablished: 2013,
+      regulatoryScope: 'TEQSA Registered Australian University PRV12209 • CRICOS 03389E',
+    },
+    highlights: [
+      'Australia’s fastest-growing international university with industry-integrated learning',
+      'Blue Mountains campus recognized #1 Hospitality School in Asia-Pacific',
+      'Direct streamlined university visa processing with high grant rates worldwide',
+    ],
+  },
+  {
+    id: 'lexis-group',
+    code: 'LEXIS_GROUP',
+    name: 'Lexis Education Group',
+    tradingName: 'Lexis Group Australia',
+    abn: '62 108 554 119',
+    logoBg: 'bg-amber-700',
+    headOffice: '60 Noosa Drive',
+    headOfficeCity: 'Noosa Heads',
+    headOfficeState: 'QLD',
+    website: 'https://lexisenglish.com',
+    groupCeo: 'Ian Pratt',
+    headOfAdmissions: 'Brooke Bennett',
+    contactEmail: 'registrations@lexisgroup.com',
+    contactPhone: '+61 7 5447 4448',
+    overview:
+      'Lexis Education Group offers iconic coastal and metro study experiences across Noosa, Byron Bay, Perth, Brisbane, and Sydney, pairing ELICOS with hospitality, beauty, and business training.',
+    collegeCount: 2,
+    totalCampuses: 5,
+    totalCourses: 22,
+    states: ['QLD', 'NSW', 'WA'],
+    masterCommissionTerms: {
+      singleContractCoverage: true,
+      baseRate: 25,
+      tier1Rate: 28,
+      platinumRate: 30,
+      summary: 'Combined representation agreement offering top-tier Australian ELICOS and VET commission rates.',
+      crossSellingBonus: 'Extra $500 bonus for packaging Noosa or Byron Bay with Perth campus.',
+      paymentCycle: 'Instant / Same-Day CoE & Net 7 Days',
+    },
+    constituentColleges: [
+      {
+        id: 'lexis-english',
+        name: 'Lexis English Australia',
+        shortCode: 'LEXIS-ENG',
+        cricos: '01632D',
+        rto: '41178',
+        providerType: 'Private ELICOS Institute',
+        states: ['QLD', 'NSW', 'WA'],
+        campusesCount: 5,
+        highlightCourse: 'Cambridge Certificate in Advanced English (CAE)',
+        minWeeklyTuition: 260,
+        commissionRate: 25,
+      },
+      {
+        id: 'lexis-training',
+        name: 'Lexis Training Australia',
+        shortCode: 'LEXIS-VET',
+        cricos: '01632D',
+        rto: '41178',
+        providerType: 'Private VET Provider',
+        states: ['QLD', 'NSW', 'WA'],
+        campusesCount: 4,
+        highlightCourse: 'Certificate IV in Commercial Cookery',
+        minWeeklyTuition: 275,
+        commissionRate: 24,
+      },
+    ],
+    pathways: [
+      {
+        id: 'pwy-lex-1',
+        title: 'Coastal English to Vocational Hospitality Pathway',
+        leadCollege: 'Lexis English Australia',
+        destinationCollege: 'Lexis Training Australia',
+        qualification: 'Diploma of Hospitality Management',
+        durationWeeks: 78,
+        packagedCoEEligible: true,
+        creditExemption: 'Direct entry into Commercial Cookery without IELTS exam',
+        description: 'Category 3 Regional study experience with maximum regional migration visa points.',
+      },
+    ],
+    governance: {
+      asqaRiskTier: 'Low Risk (Tier 1)',
+      teqsaAccredited: false,
+      esosPrismsIntegrated: true,
+      ombudsmanComplianceScore: 98.9,
+      yearEstablished: 2004,
+      regulatoryScope: 'ASQA RTO #41178 • CRICOS #01632D • English Australia Member',
+    },
+    highlights: [
+      'Highest base commission rates in the sector (25% - 30%)',
+      'Exclusive beachside campuses in Byron Bay & Noosa with Category 3 regional points',
+      'Instant CoE issuance capability under 12 hours',
+    ],
+  },
+  {
+    id: 'tafe-group',
+    code: 'TAFE_GROUP',
+    name: 'TAFE NSW Network',
+    tradingName: 'TAFE NSW International',
+    abn: '39 238 428 584',
+    logoBg: 'bg-red-800',
+    headOffice: '19 Mary Ann Street, Ultimo',
+    headOfficeCity: 'Sydney',
+    headOfficeState: 'NSW',
+    website: 'https://tafensw.edu.au',
+    groupCeo: 'Stephen Brady',
+    headOfAdmissions: 'Patricia Alvarez',
+    contactEmail: 'tafensw.international@tafensw.edu.au',
+    contactPhone: '+61 2 9217 4000',
+    overview:
+      'TAFE NSW is the government public vocational education and training authority for New South Wales, encompassing over 130 campus facilities across Sydney metro and regional NSW.',
+    collegeCount: 5,
+    totalCampuses: 18,
+    totalCourses: 120,
+    states: ['NSW'],
+    masterCommissionTerms: {
+      singleContractCoverage: true,
+      baseRate: 15,
+      tier1Rate: 18,
+      platinumRate: 20,
+      summary: 'NSW Government statutory agency agreement covering all regional and metropolitan institutes.',
+      crossSellingBonus: 'Government regional scholarship allocations up to $2,000 per student.',
+      paymentCycle: 'NSW Treasury Census Schedule (Net 30 Days)',
+    },
+    constituentColleges: [
+      {
+        id: 'tafe-sydney',
+        name: 'TAFE NSW Sydney Metro (Ultimo & Randwick)',
+        shortCode: 'TAFE-SYD',
+        cricos: '00591E',
+        rto: '90003',
+        providerType: 'Public TAFE',
+        states: ['NSW'],
+        campusesCount: 6,
+        highlightCourse: 'Diploma of Information Technology (Cybersecurity)',
+        minWeeklyTuition: 320,
+        commissionRate: 15,
+      },
+      {
+        id: 'tafe-hunter',
+        name: 'TAFE NSW Hunter & Central Coast',
+        shortCode: 'TAFE-HUNTER',
+        cricos: '00591E',
+        rto: '90003',
+        providerType: 'Public Regional TAFE',
+        states: ['NSW'],
+        campusesCount: 5,
+        highlightCourse: 'Diploma of Nursing (HLT54121)',
+        minWeeklyTuition: 330,
+        commissionRate: 16,
+      },
+      {
+        id: 'tafe-illawarra',
+        name: 'TAFE NSW Illawarra & South Coast',
+        shortCode: 'TAFE-ILLA',
+        cricos: '00591E',
+        rto: '90003',
+        providerType: 'Public Regional TAFE',
+        states: ['NSW'],
+        campusesCount: 4,
+        highlightCourse: 'Certificate IV in Commercial Cookery',
+        minWeeklyTuition: 320,
+        commissionRate: 15,
+      },
+    ],
+    pathways: [
+      {
+        id: 'pwy-tafe-1',
+        title: 'TAFE NSW Diploma to UTS & Western Sydney University Degree',
+        leadCollege: 'TAFE NSW Sydney Metro',
+        destinationCollege: 'University of Technology Sydney (UTS)',
+        qualification: 'Bachelor of Science in Information Technology',
+        durationWeeks: 104,
+        packagedCoEEligible: true,
+        creditExemption: '1.5 years credit transfer granted for completed TAFE Diploma',
+        description: 'Guaranteed government-backed articulation to NSW universities.',
+      },
+    ],
+    governance: {
+      asqaRiskTier: 'Low Risk (Tier 1)',
+      teqsaAccredited: true,
+      esosPrismsIntegrated: true,
+      ombudsmanComplianceScore: 100,
+      yearEstablished: 1891,
+      regulatoryScope: 'NSW Government Public Statutory Provider • CRICOS 00591E • ASQA 90003',
+    },
+    highlights: [
+      'Largest public vocational provider in the Southern Hemisphere',
+      'Government credentials and industry-grade training workshops',
+      'Direct formal university articulation agreements across NSW institutions',
+    ],
+  },
+  {
+    id: 'neh-group',
+    code: 'NEH_GROUP',
+    name: 'National Education Holdings (NEH)',
+    tradingName: 'National Education Group',
+    abn: '52 619 402 119',
+    logoBg: 'bg-cyan-800',
+    headOffice: 'Level 5, 399 Lonsdale Street',
+    headOfficeCity: 'Melbourne',
+    headOfficeState: 'VIC',
+    website: 'https://anc.vic.edu.au',
+    groupCeo: 'Rajiv Sharma',
+    headOfAdmissions: 'Priya Mehra',
+    contactEmail: 'corporate@neh.edu.au',
+    contactPhone: '+61 3 9642 0550',
+    overview:
+      'National Education Holdings operates Australian National College (ANC) and National Institute of Technology, focusing on high-demand vocational fields in business, hospitality, and cloud networking.',
+    collegeCount: 2,
+    totalCampuses: 3,
+    totalCourses: 20,
+    states: ['VIC', 'NSW'],
+    masterCommissionTerms: {
+      singleContractCoverage: true,
+      baseRate: 22,
+      tier1Rate: 25,
+      platinumRate: 28,
+      summary: 'Consolidated representation agreement with monthly commission payouts.',
+      crossSellingBonus: 'Flexible monthly CoE payment installments for students.',
+      paymentCycle: 'Monthly Net 10 Days',
+    },
+    constituentColleges: [
+      {
+        id: 'anc',
+        name: 'Australian National College (ANC)',
+        shortCode: 'ANC',
+        cricos: '03310J',
+        rto: '40847',
+        providerType: 'Private VET & ELICOS',
+        states: ['VIC', 'NSW'],
+        campusesCount: 2,
+        highlightCourse: 'Diploma of Business',
+        minWeeklyTuition: 220,
+        commissionRate: 22,
+      },
+      {
+        id: 'nit-australia',
+        name: 'National Institute of Technology (NIT)',
+        shortCode: 'NIT',
+        cricos: '03310J',
+        rto: '40847',
+        providerType: 'Vocational IT College',
+        states: ['VIC'],
+        campusesCount: 1,
+        highlightCourse: 'Advanced Diploma of Cloud Architecture',
+        minWeeklyTuition: 240,
+        commissionRate: 23,
+      },
+    ],
+    pathways: [
+      {
+        id: 'pwy-neh-1',
+        title: 'ANC Diploma to Federation University Degree',
+        leadCollege: 'Australian National College (ANC)',
+        destinationCollege: 'Federation University Australia',
+        qualification: 'Bachelor of Business',
+        durationWeeks: 104,
+        packagedCoEEligible: true,
+        creditExemption: '1 year credit transfer into Bachelor program',
+        description: 'Regional migration pathways available via Federation University campuses.',
+      },
+    ],
+    governance: {
+      asqaRiskTier: 'Low Risk (Tier 1)',
+      teqsaAccredited: false,
+      esosPrismsIntegrated: true,
+      ombudsmanComplianceScore: 98.2,
+      yearEstablished: 2008,
+      regulatoryScope: 'ASQA RTO #40847 • CRICOS #03310J',
+    },
+    highlights: [
+      'Most accessible weekly fee structures in Melbourne & Sydney ($220/wk)',
+      'High visa grant record in Southeast Asia and Latin America',
+      'Unified agency agreement covering all vocational certificate & diploma tracks',
+    ],
   },
 ];
 
 export default function PartnerSchoolsPortalPage() {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // Filters
   const [selectedState, setSelectedState] = useState<string>('All');
@@ -352,13 +1239,39 @@ export default function PartnerSchoolsPortalPage() {
   const [minCommission, setMinCommission] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'commission' | 'courses' | 'sla' | 'tuition'>('commission');
-  const [viewMode, setViewMode] = useState<'grid' | 'table' | 'by-state'>('grid');
+  const initialView = searchParams.get('view') === 'groups' ? 'groups' : 'grid';
+  const [viewMode, setViewMode] = useState<'grid' | 'table' | 'by-state' | 'groups'>(initialView);
 
-  // Modals & Comparison State
+  // Modals, Education Groups & Comparison State
   const [inspectedSchool, setInspectedSchool] = useState<PartnerSchool | null>(null);
   const [activeDossierTab, setActiveDossierTab] = useState<'overview' | 'courses' | 'commissions' | 'admissions'>('overview');
+  const [selectedGroup, setSelectedGroup] = useState<EducationGroupItem | null>(null);
+  const [activeGroupTab, setActiveGroupTab] = useState<'colleges' | 'master-agreement' | 'pathways' | 'governance'>('colleges');
+  const [groupSearchQuery, setGroupSearchQuery] = useState('');
   const [comparedSchoolIds, setComparedSchoolIds] = useState<string[]>([]);
   const [compareModalOpen, setCompareModalOpen] = useState(false);
+
+  // Filtered Education Groups
+  const filteredGroups = useMemo(() => {
+    return EDUCATION_GROUPS.filter((group) => {
+      const matchesState = selectedState === 'All' || group.states.includes(selectedState);
+      const q = (groupSearchQuery || searchQuery).toLowerCase().trim();
+      const matchesSearch =
+        !q ||
+        group.name.toLowerCase().includes(q) ||
+        (group.tradingName && group.tradingName.toLowerCase().includes(q)) ||
+        (group.asxCode && group.asxCode.toLowerCase().includes(q)) ||
+        (group.abn && group.abn.includes(q)) ||
+        group.constituentColleges.some(
+          (c) =>
+            c.name.toLowerCase().includes(q) ||
+            c.cricos.toLowerCase().includes(q) ||
+            c.rto.toLowerCase().includes(q) ||
+            c.highlightCourse.toLowerCase().includes(q)
+        );
+      return matchesState && matchesSearch;
+    });
+  }, [selectedState, groupSearchQuery, searchQuery]);
 
   // Derived filtered & sorted list
   const filteredSchools = useMemo(() => {
@@ -551,6 +1464,18 @@ export default function PartnerSchoolsPortalPage() {
                 <MapPin className="w-3.5 h-3.5" />
                 By State / City
               </button>
+              <button
+                onClick={() => setViewMode('groups')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  viewMode === 'groups' ? 'bg-white text-blue-700 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Briefcase className="w-3.5 h-3.5 text-blue-600" />
+                By Education Group
+                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-700">
+                  {EDUCATION_GROUPS.length}
+                </span>
+              </button>
             </div>
           </div>
 
@@ -710,6 +1635,33 @@ export default function PartnerSchoolsPortalPage() {
                       </button>
                     </div>
 
+                    {/* Education Group Affiliation Pill */}
+                    {school.educationGroupName && (
+                      <div className="mb-2.5">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const grp = EDUCATION_GROUPS.find((g) => g.id === school.educationGroupId);
+                            if (grp) {
+                              setSelectedGroup(grp);
+                              setActiveGroupTab('colleges');
+                            }
+                          }}
+                          className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-slate-700 hover:text-blue-700 bg-slate-50 hover:bg-blue-50/80 px-2.5 py-1 rounded-lg transition-colors border border-slate-200/80 cursor-pointer text-left w-full group/holding"
+                          title="Click to view parent holding Education Group & master terms"
+                        >
+                          <Building className="w-3 h-3 text-blue-600 shrink-0 group-hover/holding:scale-110 transition-transform" />
+                          <span className="truncate">Group: <strong className="text-slate-900 group-hover/holding:text-blue-700">{school.educationGroupName}</strong></span>
+                          {school.educationGroupAsx && (
+                            <span className="ml-auto text-[9px] font-mono px-1.5 py-0.2 rounded bg-blue-100 text-blue-800 font-bold shrink-0">
+                              {school.educationGroupAsx}
+                            </span>
+                          )}
+                        </button>
+                      </div>
+                    )}
+
                     {/* Provider Type & SLA Badges */}
                     <div className="flex items-center gap-1.5 flex-wrap mb-3">
                       <Badge variant="default" className="text-[10px] py-0.5">
@@ -848,6 +1800,23 @@ export default function PartnerSchoolsPortalPage() {
                           <div>
                             <span className="font-bold text-slate-900 block">{s.name}</span>
                             <span className="text-[11px] font-mono text-slate-500">CRICOS {s.cricos} • RTO #{s.rto}</span>
+                            {s.educationGroupName && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const grp = EDUCATION_GROUPS.find((g) => g.id === s.educationGroupId);
+                                  if (grp) {
+                                    setSelectedGroup(grp);
+                                    setActiveGroupTab('colleges');
+                                  }
+                                }}
+                                className="inline-flex items-center gap-1 text-[10px] font-medium text-blue-700 hover:text-blue-900 bg-blue-50 px-1.5 py-0.5 rounded mt-0.5 cursor-pointer"
+                                title="View Education Group"
+                              >
+                                <Building className="w-2.5 h-2.5" />
+                                {s.educationGroupName}
+                              </button>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -996,6 +1965,222 @@ export default function PartnerSchoolsPortalPage() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* VIEW MODE 4: BY AUSTRALIAN EDUCATION GROUP (HOLDING ENTITIES)             */}
+        {/* ========================================================================= */}
+        {viewMode === 'groups' && (
+          <div className="space-y-6">
+            {/* Domain Context Explainer Banner */}
+            <div className="rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 sm:p-7 shadow-sm border border-slate-800">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="space-y-2 max-w-3xl">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-semibold">
+                    <Building2 className="w-3.5 h-3.5" />
+                    Australian International Education Domain • Parent Holding Corporate Entities
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                    Education Groups (Multi-College Parent Holding Entities)
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    In the Australian international education industry, an <strong>Education Group</strong> is a parent holding company that owns, acquires, and operates multiple distinct colleges (providers) under a single corporate entity. Each subsidiary college retains its own independent <strong>CRICOS code</strong>, <strong>RTO code</strong>, and campuses, while sharing unified enterprise governance, <strong>Master Agency Agreements</strong>, and in-group articulated study pathways.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap sm:flex-col gap-2 shrink-0">
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 text-xs border border-white/15">
+                    <FileCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>Single Master Agency Agreement</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 text-xs border border-white/15">
+                    <GitCompare className="w-4 h-4 text-blue-400 shrink-0" />
+                    <span>Pre-Packaged In-Group CoEs</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 text-xs border border-white/15">
+                    <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
+                    <span>Consolidated ASQA / TEQSA Risk</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Group Filter & Search Status */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500 px-1">
+              <span>
+                Showing <strong>{filteredGroups.length}</strong> Education Groups operating{' '}
+                <strong>{filteredGroups.reduce((acc, g) => acc + g.constituentColleges.length, 0)}</strong> member colleges across Australia.
+              </span>
+              <span className="text-slate-400 hidden sm:inline">
+                Click any group card to review Master Representation terms &amp; articulated pathways.
+              </span>
+            </div>
+
+            {/* Grid of Education Groups */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {filteredGroups.map((group) => {
+                return (
+                  <Card
+                    key={group.id}
+                    className="p-6 flex flex-col justify-between hover:shadow-lg transition-all duration-200 border-2 border-slate-200/90 hover:border-blue-400 bg-white"
+                  >
+                    <div className="space-y-4">
+                      {/* Header: Logo, Name, ASX / ABN, Risk Tier */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3.5">
+                          <div
+                            className={`w-13 h-13 rounded-2xl ${group.logoBg} text-white font-black flex items-center justify-center text-sm shadow-md shrink-0`}
+                          >
+                            {group.code.substring(0, 3)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="text-lg font-bold text-slate-900 leading-snug">
+                                {group.name}
+                              </h3>
+                              {group.asxCode && (
+                                <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                  {group.asxCode}
+                                </span>
+                              )}
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                                ABN {group.abn}
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-500 font-medium mt-0.5">
+                              Trading as: <strong className="text-slate-700">{group.tradingName}</strong> • Head Office: {group.headOfficeCity}, {group.headOfficeState}
+                            </p>
+                          </div>
+                        </div>
+
+                        <Badge variant="success" className="text-[10px] py-1 shrink-0">
+                          {group.governance.asqaRiskTier}
+                        </Badge>
+                      </div>
+
+                      {/* Brief Overview */}
+                      <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
+                        {group.overview}
+                      </p>
+
+                      {/* Aggregate Metrics Strip */}
+                      <div className="grid grid-cols-4 gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200/70 text-center">
+                        <div>
+                          <span className="text-[10px] text-slate-400 uppercase font-bold block">Colleges</span>
+                          <span className="text-sm font-extrabold text-slate-900">{group.collegeCount}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-400 uppercase font-bold block">Campuses</span>
+                          <span className="text-sm font-extrabold text-slate-900">{group.totalCampuses}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-400 uppercase font-bold block">CRICOS Courses</span>
+                          <span className="text-sm font-extrabold text-blue-700">{group.totalCourses}+</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-400 uppercase font-bold block">Coverage</span>
+                          <span className="text-xs font-bold text-slate-700">{group.states.join(', ')}</span>
+                        </div>
+                      </div>
+
+                      {/* Master Commission Terms Highlight Box */}
+                      <div className="p-3.5 rounded-xl bg-emerald-50/80 border border-emerald-200 space-y-1.5">
+                        <div className="flex items-center justify-between text-xs font-bold text-emerald-950">
+                          <span className="flex items-center gap-1.5">
+                            <FileCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                            Unified Master Agency Agreement
+                          </span>
+                          <span className="font-mono text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded text-[11px]">
+                            {group.masterCommissionTerms.baseRate}% – {group.masterCommissionTerms.platinumRate}%
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-emerald-900 leading-snug">
+                          {group.masterCommissionTerms.summary}
+                        </p>
+                        <div className="flex items-center gap-2 pt-1 text-[11px] text-emerald-800 font-medium">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                          <span>{group.masterCommissionTerms.crossSellingBonus}</span>
+                        </div>
+                      </div>
+
+                      {/* Constituent Member Colleges Badges */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                          <span>Constituent Member Colleges ({group.constituentColleges.length}):</span>
+                          <span className="text-[10px] font-normal lowercase text-slate-400">individual cricos registrations</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {group.constituentColleges.map((college) => (
+                            <div
+                              key={college.id}
+                              className="p-2.5 rounded-xl bg-slate-50 hover:bg-blue-50/40 border border-slate-200/80 transition-colors"
+                            >
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="font-bold text-slate-900 text-xs truncate max-w-[170px]" title={college.name}>
+                                  {college.name}
+                                </span>
+                                <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-200 text-slate-800">
+                                  {college.shortCode}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono">
+                                <span>CRICOS {college.cricos}</span>
+                                <span>RTO #{college.rto}</span>
+                              </div>
+                              <div className="text-[10px] text-slate-600 truncate mt-1">
+                                {college.highlightCourse}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Articulated Pathways Preview */}
+                      {group.pathways.length > 0 && (
+                        <div className="p-3 rounded-xl bg-blue-50/60 border border-blue-200/80 space-y-1 text-xs">
+                          <div className="flex items-center gap-1.5 font-bold text-blue-950 text-[11px]">
+                            <GitCompare className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                            <span>In-Group Articulated Pathway: {group.pathways[0].title}</span>
+                          </div>
+                          <p className="text-[11px] text-blue-900 line-clamp-1">
+                            {group.pathways[0].leadCollege} → {group.pathways[0].destinationCollege} ({group.pathways[0].creditExemption})
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer Actions */}
+                    <div className="flex items-center gap-2.5 pt-4 mt-4 border-t border-slate-100">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedGroup(group);
+                          setActiveGroupTab('master-agreement');
+                        }}
+                        className="flex-1 text-xs font-semibold"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        Master Terms
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setSelectedGroup(group);
+                          setActiveGroupTab('colleges');
+                        }}
+                        className="flex-1 text-xs font-semibold"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        Inspect Group Dossier
+                        <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
+                      </Button>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -1251,6 +2436,459 @@ export default function PartnerSchoolsPortalPage() {
                   <Link to="/quotes">
                     <Button className="text-xs font-bold">
                       Quote Student
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* SLIDE-OVER EDUCATION GROUP DEEP-DIVE DOSSIER DRAWER                       */}
+        {/* ========================================================================= */}
+        {selectedGroup && (
+          <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex justify-end animate-in fade-in duration-200">
+            <div className="w-full max-w-2xl bg-white h-full shadow-2xl border-l border-slate-200 flex flex-col justify-between overflow-hidden">
+              {/* Drawer Top Header */}
+              <div className="p-6 border-b border-slate-100 bg-slate-50/70">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-12 h-12 rounded-xl ${selectedGroup.logoBg} text-white font-black text-sm flex items-center justify-center shadow-md`}
+                    >
+                      {selectedGroup.code.substring(0, 3)}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="text-lg font-bold text-slate-900">{selectedGroup.name}</h2>
+                        {selectedGroup.asxCode && (
+                          <Badge variant="success" className="text-[10px] py-0.5">
+                            {selectedGroup.asxCode}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="default">ABN {selectedGroup.abn}</Badge>
+                        <span className="text-xs text-slate-500 font-medium">
+                          {selectedGroup.collegeCount} Constituent Colleges • {selectedGroup.totalCampuses} Campuses
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedGroup(null)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Tab switcher inside group dossier */}
+                <div className="flex items-center gap-1 mt-6 border-b border-slate-200 overflow-x-auto">
+                  <button
+                    onClick={() => setActiveGroupTab('colleges')}
+                    className={`pb-2.5 px-3 text-xs font-bold transition-all cursor-pointer border-b-2 whitespace-nowrap ${
+                      activeGroupTab === 'colleges'
+                        ? 'border-blue-600 text-blue-700'
+                        : 'border-transparent text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    Constituent Colleges ({selectedGroup.constituentColleges.length})
+                  </button>
+                  <button
+                    onClick={() => setActiveGroupTab('master-agreement')}
+                    className={`pb-2.5 px-3 text-xs font-bold transition-all cursor-pointer border-b-2 whitespace-nowrap ${
+                      activeGroupTab === 'master-agreement'
+                        ? 'border-blue-600 text-blue-700'
+                        : 'border-transparent text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    Master Agency Agreement
+                  </button>
+                  <button
+                    onClick={() => setActiveGroupTab('pathways')}
+                    className={`pb-2.5 px-3 text-xs font-bold transition-all cursor-pointer border-b-2 whitespace-nowrap ${
+                      activeGroupTab === 'pathways'
+                        ? 'border-blue-600 text-blue-700'
+                        : 'border-transparent text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    In-Group Pathways ({selectedGroup.pathways.length})
+                  </button>
+                  <button
+                    onClick={() => setActiveGroupTab('governance')}
+                    className={`pb-2.5 px-3 text-xs font-bold transition-all cursor-pointer border-b-2 whitespace-nowrap ${
+                      activeGroupTab === 'governance'
+                        ? 'border-blue-600 text-blue-700'
+                        : 'border-transparent text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    Corporate Governance
+                  </button>
+                </div>
+              </div>
+
+              {/* Drawer Scrollable Content */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6 text-xs text-slate-600">
+                {/* TAB 1: CONSTITUENT COLLEGES */}
+                {activeGroupTab === 'colleges' && (
+                  <div className="space-y-4">
+                    <div className="p-3.5 bg-blue-50/70 border border-blue-200 rounded-xl text-blue-950 space-y-1">
+                      <div className="flex items-center gap-2 font-bold text-xs">
+                        <Building2 className="w-4 h-4 text-blue-600" />
+                        <span>Corporate Multi-College Operating Architecture</span>
+                      </div>
+                      <p className="text-[11px] text-blue-900 leading-relaxed">
+                        Under Australian ESOS regulation, each member college maintains its own distinct CRICOS registration number, ASQA/TEQSA approval scope, and accredited qualifications, while operating under the central administrative governance of {selectedGroup.name}.
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      {selectedGroup.constituentColleges.map((college) => (
+                        <div
+                          key={college.id}
+                          className="p-4 rounded-xl border border-slate-200 bg-white hover:border-blue-300 transition-all space-y-3 shadow-2xs"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-slate-900 text-sm">{college.name}</span>
+                                <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-700">
+                                  {college.shortCode}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-[11px] text-slate-500 font-mono mt-0.5">
+                                <span>CRICOS: <strong className="text-slate-800">{college.cricos}</strong></span>
+                                <span>•</span>
+                                <span>RTO/PRV: <strong className="text-slate-800">{college.rto}</strong></span>
+                              </div>
+                            </div>
+                            <Badge variant="default" className="text-[10px]">
+                              {college.providerType}
+                            </Badge>
+                          </div>
+
+                          <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 space-y-1">
+                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                              Flagship Specialization:
+                            </span>
+                            <span className="text-xs font-semibold text-slate-900">
+                              {college.highlightCourse}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-2 text-center pt-1 text-[11px]">
+                            <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                              <span className="text-slate-400 block text-[10px]">Tuition From</span>
+                              <span className="font-bold text-slate-900">
+                                {college.minWeeklyTuition > 0 ? `A$${college.minWeeklyTuition}/wk` : 'Custom Scope'}
+                              </span>
+                            </div>
+                            <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                              <span className="text-slate-400 block text-[10px]">Base Commission</span>
+                              <span className="font-bold text-emerald-700">
+                                {college.commissionRate > 0 ? `${college.commissionRate}%` : 'Standard'}
+                              </span>
+                            </div>
+                            <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                              <span className="text-slate-400 block text-[10px]">Campuses</span>
+                              <span className="font-bold text-blue-700">{college.campusesCount} Facilities</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                            <span className="text-[11px] text-slate-500">
+                              States: <strong className="text-slate-700">{college.states.join(', ')}</strong>
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <Link to="/courses">
+                                <Button variant="secondary" size="sm" className="h-7 text-xs px-2.5">
+                                  Courses
+                                </Button>
+                              </Link>
+                              <Link to="/quotes">
+                                <Button size="sm" className="h-7 text-xs px-2.5">
+                                  Quote
+                                </Button>
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 2: MASTER AGENCY AGREEMENT */}
+                {activeGroupTab === 'master-agreement' && (
+                  <div className="space-y-5">
+                    <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 space-y-2">
+                      <div className="flex items-center gap-2 font-bold text-emerald-950 text-sm">
+                        <FileCheck className="w-4 h-4 text-emerald-600" />
+                        <span>Single Master Representation Guarantee</span>
+                      </div>
+                      <p className="text-xs text-emerald-900 leading-relaxed">
+                        Under {selectedGroup.name}&apos;s Master Agency Agreement, your agency signs <strong>one single corporate agreement</strong> that legally authorizes representation across all {selectedGroup.collegeCount} constituent member colleges without duplicate onboarding, reference vetting, or secondary contracts.
+                      </p>
+                    </div>
+
+                    <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-3">
+                      <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
+                        Master Commission Schedule
+                      </h4>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                          <span className="text-[10px] text-slate-400 uppercase font-bold block">Base Rate</span>
+                          <span className="text-lg font-black text-emerald-700">{selectedGroup.masterCommissionTerms.baseRate}%</span>
+                          <span className="text-[10px] text-slate-500 block">Default Tier</span>
+                        </div>
+                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                          <span className="text-[10px] text-slate-400 uppercase font-bold block">Tier-1 Volume</span>
+                          <span className="text-lg font-black text-blue-700">{selectedGroup.masterCommissionTerms.tier1Rate}%</span>
+                          <span className="text-[10px] text-slate-500 block">5+ Enrolments/yr</span>
+                        </div>
+                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                          <span className="text-[10px] text-slate-400 uppercase font-bold block">Platinum Rate</span>
+                          <span className="text-lg font-black text-purple-700">{selectedGroup.masterCommissionTerms.platinumRate}%</span>
+                          <span className="text-[10px] text-slate-500 block">20+ Enrolments/yr</span>
+                        </div>
+                      </div>
+
+                      <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-950 space-y-1">
+                        <div className="flex items-center gap-1.5 font-bold text-xs">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                          <span>Cross-Selling &amp; Packaging Override Bonus</span>
+                        </div>
+                        <p className="text-[11px] text-amber-900">
+                          {selectedGroup.masterCommissionTerms.crossSellingBonus}
+                        </p>
+                      </div>
+
+                      <div className="text-[11px] text-slate-500 space-y-1 pt-1">
+                        <div>
+                          <strong>Settlement Schedule:</strong> {selectedGroup.masterCommissionTerms.paymentCycle}
+                        </div>
+                        <div>
+                          <strong>Contract Terms:</strong> Continuous 3-year term with automatic annual PRISMS review.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-2">
+                      <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
+                        Australian Compliance &amp; Standard 4 Protection
+                      </h4>
+                      <ul className="space-y-1.5 text-[11px] text-slate-600">
+                        <li className="flex items-start gap-2">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                          <span>National Code 2018 Standard 4 compliance verified with transparent PRISMS agent listing.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                          <span>Consolidated student tuition protection service (TPS) coverage under Australian Education Services for Overseas Students (ESOS) Act.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                          <span>Single central invoice settlement portal: all member college commission claims routed through one finance desk.</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <Button
+                      variant="secondary"
+                      onClick={() =>
+                        toast(
+                          `Master Agency Representation Agreement (.PDF) dispatched to your registered agency email`,
+                          'success'
+                        )
+                      }
+                      className="w-full text-xs font-bold h-9"
+                    >
+                      <Download className="w-3.5 h-3.5 mr-1" />
+                      Download Master Agreement Contract Template (.PDF)
+                    </Button>
+                  </div>
+                )}
+
+                {/* TAB 3: IN-GROUP PATHWAYS */}
+                {activeGroupTab === 'pathways' && (
+                  <div className="space-y-4">
+                    <div className="p-3.5 bg-indigo-50 border border-indigo-200 rounded-xl text-indigo-950 space-y-1">
+                      <div className="flex items-center gap-2 font-bold text-xs">
+                        <GitCompare className="w-4 h-4 text-indigo-600" />
+                        <span>Seamless Packaged CoE Issuance Under Single Visa</span>
+                      </div>
+                      <p className="text-[11px] text-indigo-900 leading-relaxed">
+                        Member colleges within {selectedGroup.name} provide pre-articulated study pathways. International students can be issued combined, concurrent PRISMS CoEs enabling them to apply for a single Australian Student Visa (Subclass 500) spanning multiple successive qualifications.
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      {selectedGroup.pathways.map((pwy) => (
+                        <div
+                          key={pwy.id}
+                          className="p-4 rounded-xl border border-slate-200 bg-white space-y-3 shadow-2xs"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-slate-900 text-sm">{pwy.title}</span>
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                              <Check className="w-3 h-3 text-emerald-600" />
+                              Packaged CoE Eligible
+                            </span>
+                          </div>
+
+                          {/* Pathway visual flow */}
+                          <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between gap-2 text-xs">
+                            <div className="flex-1">
+                              <span className="text-[10px] text-slate-400 font-bold block uppercase">Step 1 • Lead College</span>
+                              <span className="font-bold text-slate-900">{pwy.leadCollege}</span>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-blue-600 shrink-0" />
+                            <div className="flex-1 text-right">
+                              <span className="text-[10px] text-slate-400 font-bold block uppercase">Step 2 • Destination</span>
+                              <span className="font-bold text-blue-700">{pwy.destinationCollege}</span>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1.5 text-[11px]">
+                            <div>
+                              <strong className="text-slate-700">Target Qualification:</strong> {pwy.qualification}
+                            </div>
+                            <div>
+                              <strong className="text-slate-700">Total Program Duration:</strong> {pwy.durationWeeks} Weeks
+                            </div>
+                            <div>
+                              <strong className="text-slate-700">Credit Exemption &amp; Prerequisites:</strong>{' '}
+                              <span className="text-emerald-800 font-semibold">{pwy.creditExemption}</span>
+                            </div>
+                            <p className="text-slate-500 pt-1 leading-relaxed">
+                              {pwy.description}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 4: CORPORATE GOVERNANCE */}
+                {activeGroupTab === 'governance' && (
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-3">
+                      <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
+                        Corporate Legal Entity Registration
+                      </h4>
+                      <div className="grid grid-cols-2 gap-3 text-[11px]">
+                        <div>
+                          <span className="text-slate-400 block">Corporate Name</span>
+                          <span className="font-semibold text-slate-900">{selectedGroup.name}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 block">Australian Business Number</span>
+                          <span className="font-mono font-semibold text-slate-900">{selectedGroup.abn}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 block">Australian Company Number</span>
+                          <span className="font-mono font-semibold text-slate-900">{selectedGroup.acn || 'N/A'}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 block">ASX Ticker Code</span>
+                          <span className="font-mono font-bold text-emerald-700">{selectedGroup.asxCode || 'Private Company'}</span>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="text-slate-400 block">Head Office Address</span>
+                          <span className="font-semibold text-slate-900">
+                            {selectedGroup.headOffice}, {selectedGroup.headOfficeCity} {selectedGroup.headOfficeState} Australia
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-3">
+                      <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
+                        Regulatory Risk &amp; Compliance Profile
+                      </h4>
+                      <div className="grid grid-cols-2 gap-3 text-[11px]">
+                        <div>
+                          <span className="text-slate-400 block">ASQA / TEQSA Risk Tier</span>
+                          <span className="font-bold text-emerald-700">{selectedGroup.governance.asqaRiskTier}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 block">PRISMS System Status</span>
+                          <span className="font-bold text-blue-700">Direct API Integration</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 block">Ombudsman Compliance Score</span>
+                          <span className="font-bold text-slate-900">{selectedGroup.governance.ombudsmanComplianceScore}%</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 block">Year Established</span>
+                          <span className="font-bold text-slate-900">{selectedGroup.governance.yearEstablished}</span>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="text-slate-400 block">Regulatory Scope</span>
+                          <span className="font-mono text-slate-700">{selectedGroup.governance.regulatoryScope}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-3">
+                      <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
+                        Corporate Executive Admissions Desk
+                      </h4>
+                      <div className="space-y-2 text-[11px]">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500">Group Chief Executive Officer (CEO):</span>
+                          <span className="font-bold text-slate-900">{selectedGroup.groupCeo}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500">Head of International Admissions:</span>
+                          <span className="font-bold text-slate-900">{selectedGroup.headOfAdmissions}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500">Corporate Email:</span>
+                          <a href={`mailto:${selectedGroup.contactEmail}`} className="font-semibold text-blue-600 hover:underline">
+                            {selectedGroup.contactEmail}
+                          </a>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500">Direct Phone:</span>
+                          <span className="font-mono font-semibold text-slate-800">{selectedGroup.contactPhone}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Drawer Bottom Actions */}
+              <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setSelectedGroup(null)}
+                  className="text-xs"
+                >
+                  Close Dossier
+                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      toast(`Initiated direct contact request with ${selectedGroup.name} Admissions Desk`, 'success');
+                    }}
+                    className="text-xs font-semibold"
+                  >
+                    <Mail className="w-3.5 h-3.5 mr-1" />
+                    Contact Admissions
+                  </Button>
+                  <Link to="/quotes">
+                    <Button size="sm" className="text-xs font-bold">
+                      Quote Group Member
                       <ArrowUpRight className="w-3.5 h-3.5" />
                     </Button>
                   </Link>
